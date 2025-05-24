@@ -1,0 +1,39 @@
+---
+title: Starlight Codeblock Fullscreen
+description: Add fullscreen functionality to code blocks in your Starlight documentation.
+head:
+  - tag: title
+    content: starlight-codeblock-fullscreen
+  - tag: style
+    content: |
+      .hero-html {
+        --size: 12rem;
+        font-size: var(--size);
+        justify-content: center;
+        line-height: var(--size);
+      }
+template: splash
+editUrl: false
+hero:
+  tagline: Add fullscreen toggle functionality to Expressive Code blocks in your documentation.
+  image:
+    file: ../../assets/starlightrocket.svg
+  actions:
+    - text: Get Started
+      link: /starlight-codeblock-fullscreen/getting-started/
+      icon: right-arrow
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components'
+
+## Next steps
+
+<CardGrid stagger>
+  <Card title="Install the plugin" icon="puzzle">
+    Check the [getting started guide](/starlight-codeblock-fullscreen/getting-started/) for installation instructions.
+  </Card>
+  <Card title="Configure the plugin" icon="setting">
+    Edit your config in the `astro.config.mjs` file. See the
+    [configuration guide](/starlight-codeblock-fullscreen/configuration/) for available options.
+  </Card>
+</CardGrid>

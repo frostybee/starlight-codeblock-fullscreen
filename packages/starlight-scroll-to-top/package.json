@@ -1,0 +1,44 @@
+{
+  "name": "starlight-codeblock-fullscreen",
+  "version": "0.1.1",
+  "license": "MIT",
+  "description": "Add a scroll to top button to your documentation website.",
+  "author": "frostybee",
+  "keywords": [
+    "starlight",
+    "astro",
+    "scroll",
+    "scroll-to-top",
+    "documentation"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "devDependencies": {
+    "@astrojs/starlight": "^0.34.1",
+    "astro": "^5.7.5"
+  },
+  "peerDependencies": {
+    "@astrojs/starlight": ">=0.34"
+  },
+  "packageManager": "pnpm@10.10.0",
+  "engines": {
+    "node": "^18.17.1 || ^20.3.0 || >=21.0.0"
+  },  
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "sideEffects": false,
+  "homepage": "https://github.com/frostybee/starlight-codeblock-fullscreen",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/frostybee/starlight-codeblock-fullscreen.git",
+    "directory": "packages/starlight-codeblock-fullscreen"
+  },
+  "bugs": "https://github.com/frostybee/starlight-codeblock-fullscreen/issues"
+}

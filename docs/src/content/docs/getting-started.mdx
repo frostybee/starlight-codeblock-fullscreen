@@ -1,0 +1,78 @@
+---
+title: Getting Started
+---
+
+Add fullscreen functionality to code blocks in your Starlight documentation website. This plugin enhances Expressive Code blocks by adding a fullscreen toggle button that allows users to view code in an immersive fullscreen mode.
+
+## Prerequisites
+
+You will need to have a Starlight website set up.
+If you don't have one yet, you can follow the ["Getting Started"](https://starlight.astro.build/getting-started) guide in the Starlight docs to create one.
+
+## Installation
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
+
+<Steps>
+
+1. `starlight-codeblock-fullscreen` is a Starlight [plugin](https://starlight.astro.build/reference/plugins/). Install it by running the following command in your terminal:
+
+   <Tabs syncKey="pkg">
+
+   <TabItem label="npm">
+
+   ```sh
+   npm install starlight-codeblock-fullscreen
+   ```
+
+   </TabItem>
+
+   <TabItem label="pnpm">
+
+   ```sh
+   pnpm add starlight-codeblock-fullscreen
+   ```
+
+   </TabItem>
+
+   <TabItem label="Yarn">
+
+   ```sh
+   yarn add starlight-codeblock-fullscreen
+   ```
+
+   </TabItem>
+
+   </Tabs>
+
+2. Configure the plugin in your Starlight [configuration](https://starlight.astro.build/reference/configuration/#plugins) in the `astro.config.mjs` file.
+
+   ```diff lang="js"
+   // astro.config.mjs
+   import starlight from '@astrojs/starlight'
+   import { defineConfig } from 'astro/config'
+   +import starlightCodeblockFullscreen from 'starlight-codeblock-fullscreen'
+
+   export default defineConfig({
+     integrations: [
+       starlight({
+   +      plugins: [starlightCodeblockFullscreen()],
+         title: 'My Docs',
+       }),
+     ],
+   })
+   ```
+
+3. [Start the development server](https://starlight.astro.build/getting-started/#start-the-development-server) to see the fullscreen toggle buttons added to your code blocks.
+
+</Steps>
+
+## Features
+
+Once installed, the plugin will automatically add a fullscreen toggle button to your Expressive Code blocks. Users can:
+
+- Click the fullscreen button to expand code blocks to fullscreen view
+- Use the Escape key to exit fullscreen mode (configurable)
+- Use browser back button to exit fullscreen mode (configurable)
+- Enjoy automatic zoom optimization for better code readability in fullscreen mode
+- Experience smooth transitions and animations when entering/exiting fullscreen mode
