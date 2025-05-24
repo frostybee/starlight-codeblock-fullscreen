@@ -8,6 +8,8 @@ export default defineConfig({
   base: "/starlight-codeblock-fullscreen",
   integrations: [
     starlight({
+      title: 'Starlight Code Block Fullscreen',
+      favicon: '/images/full-screen.svg',
       editLink: {
         baseUrl: 'https://github.com/frostybee/starlight-codeblock-fullscreen/edit/main/docs/',
       },
@@ -33,8 +35,7 @@ export default defineConfig({
       ],
       social: [
         { href: 'https://github.com/frostybee/starlight-codeblock-fullscreen', icon: 'github', label: 'GitHub' },
-      ],
-      title: 'Starlight Scroll to Top',
+      ],      
     }),
   ],
 })

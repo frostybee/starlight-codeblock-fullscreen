@@ -2,13 +2,13 @@
   "name": "starlight-codeblock-fullscreen",
   "version": "0.1.1",
   "license": "MIT",
-  "description": "Add a scroll to top button to your documentation website.",
+  "description": "Add fullscreen functionality to codeblocks in your documentation website.",
   "author": "frostybee",
   "keywords": [
     "starlight",
     "astro",
-    "scroll",
-    "scroll-to-top",
+    "fullscreen",
+    "codeblock",
     "documentation"
   ],
   "type": "module",
