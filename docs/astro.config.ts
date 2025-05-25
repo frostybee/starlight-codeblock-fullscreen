@@ -32,13 +32,19 @@ export default defineConfig({
           items: [
             { slug: 'getting-started' },
             { slug: 'configuration' },
-
           ],
-        }       
+        },
+        {
+          label: 'Features',
+          collapsed: false,
+          items: [
+            { slug: 'features' },
+          ],
+        }
       ],
       social: [
         { href: 'https://github.com/frostybee/starlight-codeblock-fullscreen', icon: 'github', label: 'GitHub' },
-      ],      
+      ],
     }),
   ],
 })

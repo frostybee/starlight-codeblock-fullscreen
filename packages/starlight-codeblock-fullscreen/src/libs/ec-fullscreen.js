@@ -333,7 +333,6 @@ function initECFullscreen(config) {
        */
       setZoom(level) {
         document.body.style.zoom = `${level}%`;
-        console.log(`Zoom set to ${level}%`);
       },
 
       /**
@@ -341,7 +340,6 @@ function initECFullscreen(config) {
        */
       removeZoomStyling() {
         document.body.style.zoom = "";
-        console.log("Zoom styling removed - browser controls zoom");
       },
 
       /**
@@ -353,9 +351,6 @@ function initECFullscreen(config) {
 
         if (!storedInitial) {
           this.storeInitialZoom(currentZoom);
-          console.log(`Initial zoom level stored: ${currentZoom}%`);
-        } else {
-          console.log(`Using stored initial zoom level: ${storedInitial}%`);
         }
       },
     };
@@ -369,9 +364,7 @@ function initECFullscreen(config) {
 
       // Set to configured zoom level for fullscreen.
       zoomManager.setZoom(config.fullscreenZoomLevel);
-      console.log(
-        `Fullscreen activated - zoom set to ${config.fullscreenZoomLevel}% (was ${currentZoom}%)`
-      );
+    
     }
 
     /**
@@ -382,11 +375,9 @@ function initECFullscreen(config) {
 
       if (initialZoom) {
         zoomManager.setZoom(initialZoom);
-        console.log(`Zoom restored to initial level: ${initialZoom}%`);
       } else {
         // Fallback: remove zoom styling.
         zoomManager.removeZoomStyling();
-        console.log("No stored initial zoom - removing zoom styling");
       }
     }
 

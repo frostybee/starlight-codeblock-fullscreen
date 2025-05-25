@@ -32,7 +32,7 @@ export default defineConfig({
 
 ## Configuration Options
 
-The Starlight code  block fullscreen plugin accepts an object with the following options. You can customize these options to fit your needs. Default values are provided for each option.
+The Starlight code block fullscreen plugin accepts an object with the following options. You can customize these options to fit your needs. Default values are provided for each option.
 
 ### `fullscreenButtonTooltip`
 
@@ -46,23 +46,41 @@ The Starlight code  block fullscreen plugin accepts an object with the following
 - **Default**: `true`
 - **Description**: Controls whether the Escape key can be used to exit fullscreen mode. Set to `true` to allow users to press Escape to exit fullscreen, or `false` to disable this functionality.
 
-### `enableBackButton`
+### `exitOnBrowserBack`
 
 - **Type**: `boolean`
 - **Default**: `true`
 - **Description**: Determines whether the browser's back button can be used to exit fullscreen mode. When enabled, the plugin adds a history entry when entering fullscreen, allowing users to use the back button to exit.
 
-### `addToTitledBlocksOnly`
+### `addToFramelessBlocks`
 
 - **Type**: `boolean`
 - **Default**: `false`
-- **Description**: Controls whether the fullscreen button should only be added to code blocks that have titles. Set to `true` to add buttons only to titled code blocks, or `false` to add buttons to all code blocks.
+- **Description**: Controls whether the fullscreen button should be added to frameless code blocks (blocks without titles). Set to `true` to add buttons to all code blocks including frameless ones, or `false` to add buttons only to titled code blocks.
 
 ### `fullscreenZoomLevel`
 
 - **Type**: `number`
 - **Default**: `150`
 - **Description**: Specifies the zoom level (as a percentage) applied when entering fullscreen mode. This helps optimize code readability in fullscreen view. For example, `150` means 150% zoom level.
+
+### `svgPathFullscreenOn`
+
+- **Type**: `string`
+- **Default**: `"M16 3h6v6h-2V5h-4V3zM2 3h6v2H4v4H2V3zm18 16v-4h2v6h-6v-2h4zM4 19h4v2H2v-6h2v4z"`
+- **Description**: The SVG path for the fullscreen button when not in fullscreen mode (enter fullscreen icon). Customize this to use your own icon design.
+
+### `svgPathFullscreenOff`
+
+- **Type**: `string`
+- **Default**: `"M18 7h4v2h-6V3h2v4zM8 9H2V7h4V3h2v6zm10 8v4h-2v-6h6v2h-4zM8 15v6H6v-4H2v-2h6z"`
+- **Description**: The SVG path for the fullscreen button when in fullscreen mode (exit fullscreen icon). Customize this to use your own icon design.
+
+### `animationDuration`
+
+- **Type**: `number`
+- **Default**: `150`
+- **Description**: The duration of the fullscreen animation in milliseconds. Controls how fast the transition to and from fullscreen mode occurs.
 
 ## Example Configuration
 
@@ -80,9 +98,12 @@ export default defineConfig({
         starlightCodeblockFullscreen({
           fullscreenButtonTooltip: 'View in fullscreen',
           enableEscapeKey: true,
-          enableBackButton: true,
-          addToTitledBlocksOnly: false,
+          exitOnBrowserBack: true,
+          addToFramelessBlocks: false,
           fullscreenZoomLevel: 120,
+          svgPathFullscreenOn: "M16 3h6v6h-2V5h-4V3zM2 3h6v2H4v4H2V3zm18 16v-4h2v6h-6v-2h4zM4 19h4v2H2v-6h2v4z",
+          svgPathFullscreenOff: "M18 7h4v2h-6V3h2v4zM8 9H2V7h4V3h2v6zm10 8v4h-2v-6h6v2h-4zM8 15v6H6v-4H2v-2h6z",
+          animationDuration: 200,
         }),
       ],
       title: 'My Documentation',
@@ -92,12 +113,14 @@ export default defineConfig({
 ```
 
 :::note
-The above configuration customizes the tooltip text, enables both escape key and back button navigation, adds fullscreen buttons to all code blocks (not just titled ones), and sets a zoom level of 120% for better readability in fullscreen mode.
+The above configuration customizes the tooltip text, enables both escape key and back button navigation, adds fullscreen buttons only to titled code blocks, sets a zoom level of 120% for better readability in fullscreen mode, uses custom SVG icons, and sets a slower animation duration of 200ms.
 :::
 
 ## Usage Notes
 
-- The plugin automatically detects and enhances all Expressive Code blocks on your pages
-- Fullscreen mode includes smooth animations and transitions for a polished user experience
-- The zoom level is automatically managed and restored when exiting fullscreen mode
-- The fullscreen overlay has a dark background to minimize distractions and improve code focus
+- The plugin automatically detects and enhances all Expressive Code blocks on your pages,
+- Fullscreen mode includes smooth animations and transitions for a polished user experience,
+- The zoom level is automatically managed and restored when exiting fullscreen mode,
+- The fullscreen overlay has a dark background to minimize distractions and improve code focus,
+- You can customize the fullscreen button icons by providing your own SVG paths,
+- Animation duration can be adjusted to match your site's design preferences.
