@@ -46,12 +46,12 @@ importers:
         version: 0.34.2
       starlight-codeblock-fullscreen:
         specifier: workspace:*
-        version: link:../packages/starlight-scroll-to-top
+        version: link:../packages/starlight-codeblock-fullscreen
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
 
-  packages/starlight-scroll-to-top:
+  packages/starlight-codeblock-fullscreen:
     devDependencies:
       '@astrojs/starlight':
         specifier: ^0.34.1

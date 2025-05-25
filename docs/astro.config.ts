@@ -18,8 +18,9 @@ export default defineConfig({
           fullscreenButtonTooltip: 'Toggle fullscreen view',
           enableEscapeKey: true,
           enableBackButton: true,
-          addToTitledBlocksOnly: false,
+          addToTitledBlocksOnly: true,
           fullscreenZoomLevel: 150,
+          animationDuration: 150,
         }
         )],
       sidebar: [
