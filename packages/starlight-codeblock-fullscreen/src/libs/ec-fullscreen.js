@@ -7,12 +7,12 @@ function initECFullscreen(config) {
   const {
     fullscreenButtonTooltip = "Toggle fullscreen view",
     enableEscapeKey = true,
-    enableBackButton = true,
-    addToTitledBlocksOnly = false,
+    exitOnBrowserBack = true,
+    addToFramelessBlocks = false,
     fullscreenZoomLevel = 150,
     animationDuration = 150,
-    fullscreenOnSvgPath = "M16 3h6v6h-2V5h-4V3zM2 3h6v2H4v4H2V3zm18 16v-4h2v6h-6v-2h4zM4 19h4v2H2v-6h2v4z",
-    fullscreenOffSvgPath = "M18 7h4v2h-6V3h2v4zM8 9H2V7h4V3h2v6zm10 8v4h-2v-6h6v2h-4zM8 15v6H6v-4H2v-2h6z",
+    svgPathFullscreenOn = "M16 3h6v6h-2V5h-4V3zM2 3h6v2H4v4H2V3zm18 16v-4h2v6h-6v-2h4zM4 19h4v2H2v-6h2v4z",
+    svgPathFullscreenOff = "M18 7h4v2h-6V3h2v4zM8 9H2V7h4V3h2v6zm10 8v4h-2v-6h6v2h-4zM8 15v6H6v-4H2v-2h6z",
   } = config;
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -333,6 +333,7 @@ function initECFullscreen(config) {
        */
       setZoom(level) {
         document.body.style.zoom = `${level}%`;
+        console.log(`Zoom set to ${level}%`);
       },
 
       /**
@@ -340,6 +341,7 @@ function initECFullscreen(config) {
        */
       removeZoomStyling() {
         document.body.style.zoom = "";
+        console.log("Zoom styling removed - browser controls zoom");
       },
 
       /**
@@ -351,7 +353,10 @@ function initECFullscreen(config) {
 
         if (!storedInitial) {
           this.storeInitialZoom(currentZoom);
-        } 
+          console.log(`Initial zoom level stored: ${currentZoom}%`);
+        } else {
+          console.log(`Using stored initial zoom level: ${storedInitial}%`);
+        }
       },
     };
 
@@ -364,6 +369,9 @@ function initECFullscreen(config) {
 
       // Set to configured zoom level for fullscreen.
       zoomManager.setZoom(config.fullscreenZoomLevel);
+      console.log(
+        `Fullscreen activated - zoom set to ${config.fullscreenZoomLevel}% (was ${currentZoom}%)`
+      );
     }
 
     /**
@@ -374,9 +382,11 @@ function initECFullscreen(config) {
 
       if (initialZoom) {
         zoomManager.setZoom(initialZoom);
+        console.log(`Zoom restored to initial level: ${initialZoom}%`);
       } else {
         // Fallback: remove zoom styling.
         zoomManager.removeZoomStyling();
+        console.log("No stored initial zoom - removing zoom styling");
       }
     }
 
@@ -467,10 +477,10 @@ function initECFullscreen(config) {
 
       button.innerHTML = `
       <svg class="fullscreen-on" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="currentColor" d="${config.fullscreenOnSvgPath}"/>
+        <path fill="currentColor" d="${config.svgPathFullscreenOn}"/>
       </svg>
       <svg class="fullscreen-off" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="currentColor" d="${config.fullscreenOffSvgPath}"/>
+        <path fill="currentColor" d="${config.svgPathFullscreenOff}"/>
       </svg>
     `;
 
@@ -503,7 +513,7 @@ function initECFullscreen(config) {
         figure.classList.contains("is-terminal");
 
       // If configured to only add to titled blocks, skip blocks without titles or terminal.
-      if (config.addToTitledBlocksOnly && !hasHeaderArea) {
+      if (!config.addToFramelessBlocks && !hasHeaderArea) {
         return;
       }
       if (hasHeaderArea) {
@@ -654,7 +664,11 @@ function initECFullscreen(config) {
       setBodyOverflow(true);
 
       if (config.enableEscapeKey) addKeyupListener();
-      if (config.enableBackButton) addPopStateListener();
+      if (config.exitOnBrowserBack) {
+        // Push a new history state so back button can exit fullscreen
+        history.pushState({ fullscreenActive: true }, "", window.location.href);
+        addPopStateListener();
+      }
 
       // Apply page background color to fullscreen container.
       const pageBackgroundColor = getPageBackgroundColor();
@@ -707,7 +721,13 @@ function initECFullscreen(config) {
       restoreScrollPosition();
 
       if (config.enableEscapeKey) removeKeyupListener();
-      if (config.enableBackButton) removePopStateListener();
+      if (config.exitOnBrowserBack) {
+        removePopStateListener();
+        // Only go back if we're exiting due to escape key or button click (not back button)
+        if (history.state && history.state.fullscreenActive) {
+          history.back();
+        }
+      }
 
       // Remove focus trap.
       removeFocusTrap();
@@ -813,13 +833,20 @@ function initECFullscreen(config) {
     /**
      * Handle the popstate event when the back button is pressed.
      */
-    function handlePopState() {
+    function handlePopState(event) {
       if (fullscreenState.isFullscreenActive) {
-        const fullscreenContainer = document.querySelector(
-          ".ec-fullscreen-container"
-        );
-        if (fullscreenContainer) {
-          exitFullscreen(fullscreenContainer);
+        // Prevent the history.back() call in exitFullscreen from causing a loop
+        const isBackButtonPressed =
+          !event.state || !event.state.fullscreenActive;
+        if (isBackButtonPressed) {
+          const fullscreenContainer = document.querySelector(
+            ".ec-fullscreen-container"
+          );
+          if (fullscreenContainer) {
+            // Temporarily disable back button handling to prevent recursion
+            removePopStateListener();
+            exitFullscreen(fullscreenContainer);
+          }
         }
       }
     }
