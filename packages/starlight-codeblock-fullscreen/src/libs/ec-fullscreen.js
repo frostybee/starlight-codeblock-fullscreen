@@ -16,7 +16,7 @@ function initECFullscreen(config) {
   } = config;
 
   document.addEventListener("DOMContentLoaded", () => {
-    // Avoid duplicate initialization
+    // Avoid duplicate initialization.
     if (window.expressiveCodeFullscreenInitialized) return;
     window.expressiveCodeFullscreenInitialized = true;
 
@@ -141,23 +141,6 @@ function initECFullscreen(config) {
       }
     }
 
-    // Create and inject styles with animation duration from config.
-    function injectStyles() {
-      if (document.getElementById("expressive-code-fullscreen-styles")) return;
-
-      const styleSheet = document.createElement("style");
-      styleSheet.id = "expressive-code-fullscreen-styles";
-
-      // Set CSS custom property for animation duration
-      document.documentElement.style.setProperty(
-        "--ec-fullscreen-animation-duration",
-        `${config.animationDuration}ms`
-      );
-
-      // Note: CSS styles are now loaded separately via the integration
-      document.head.appendChild(styleSheet);
-    }
-
     // Create fullscreen container.
     function createFullscreenContainer() {
       if (document.querySelector(".ec-fullscreen-container")) return;
@@ -226,7 +209,6 @@ function initECFullscreen(config) {
       return "#000000"; // Default to dark text.
     }
 
-    // Create fullscreen button HTML.
     function createFullscreenButton() {
       const button = document.createElement("button");
       button.className = "ec-fullscreen-button";
@@ -270,69 +252,59 @@ function initECFullscreen(config) {
       if (!figure) return; // Exit if no frame element found.
 
       // Check if the code block has a title/header or is a terminal so that the toggle fullscreen button can be added to the header.
-      const hasHeaderArea =
+      const hasTitleArea =
         figure.classList.contains("has-title") ||
         figure.classList.contains("is-terminal");
 
       // If configured to only add to titled blocks, skip blocks without titles or terminal.
-      if (!config.addToFramelessBlocks && !hasHeaderArea) {
+      if (!config.addToFramelessBlocks && !hasTitleArea) {
         return;
       }
-      if (hasHeaderArea) {
+      if (hasTitleArea) {
         // For code blocks with titles or terminals, add button to the figcaption header.
-        const header = codeBlock.querySelector("figcaption.header");
+        const blockHeader = codeBlock.querySelector("figcaption.header");
 
-        if (header) {
+        if (blockHeader) {
           const button = createFullscreenButton();
 
           // Ensure the header has relative positioning.
-          const headerStyle = getComputedStyle(header);
+          const headerStyle = getComputedStyle(blockHeader);
           if (headerStyle.position === "static") {
-            header.style.position = "relative";
+            blockHeader.style.position = "relative";
           }
-
+          // We need to position the button absolutely to the right of the header element (i.e. the code block's caption header).
           button.style.cssText = `
           position: absolute;
           right: 0.5rem;
           top: 50%;
           transform: translateY(-50%);
-          z-index: 10;
+          z-index: 100;
         `;
-
-          header.appendChild(button);
+          blockHeader.appendChild(button);
         }
       } else {
-        // For code blocks without titles, add button under the copy button.
+        // For code blocks without titles, add button next to the copy code button.
         const copyButton = codeBlock.querySelector(".copy");
         if (copyButton) {
+          //TODO: simplify this by using the copy button's parent element as the container for the fullscreen button.
+          //TODO: simplify this by using the copy button's parent element as the container for the fullscreen button.
+          // We need to position the fullscreen button to the right of the copy button.
+          copyButton.style.cssText = `display: flex; justify-content: flex-start; flex-direction: row;`;
           // Create a container for the fullscreen button.
           const fullscreenContainer = document.createElement("div");
-          fullscreenContainer.className = "ec-fullscreen";
-          fullscreenContainer.style.cssText = `
-          position: absolute;
-          top: 3.125rem;
-          right: 0.5rem;
-          z-index: 15;
-          pointer-events: auto;
-        `;
-
+          //   fullscreenContainer.className = "ec-fullscreen";
+          //   fullscreenContainer.style.cssText = `
+          //   position: absolute;
+          //   top: 3.125rem;
+          //   right: 0.5rem;
+          //   z-index: 15;
+          //   pointer-events: auto;
+          // `;
           const button = createFullscreenButton();
-          button.style.cssText = `
-          width: 2rem;
-          height: 2rem;
-          padding: 0.5rem;
-          background-color: rgba(255, 255, 255, 0.1);
-          border-radius: 0.375rem;
-          opacity: 0.7;
-          transition: opacity 0.2s ease, background-color 0.2s ease;
-          pointer-events: auto;
-          cursor: pointer;
-        `;
-
           fullscreenContainer.appendChild(button);
-
           // Insert the fullscreen button container in the same parent as copy button.
-          copyButton.parentNode.appendChild(fullscreenContainer);
+          // copyButton.parentNode.appendChild(fullscreenContainer);
+          copyButton.appendChild(button);
         }
       }
     }

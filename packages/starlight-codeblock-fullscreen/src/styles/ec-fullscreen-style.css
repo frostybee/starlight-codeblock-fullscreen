@@ -67,7 +67,7 @@
   }
 
   .ec-fullscreen-button:focus {
-    outline: 2px solid var(--sl-color-gray-1, rgba(255, 255, 255, 0.5));
+    outline: 2px solid var(--sl-color-white, rgba(255, 255, 255, 0.5));
     outline-offset: 0.125rem;
   }
 
@@ -85,35 +85,6 @@
 
   .expressive-code.ec-fullscreen-active .ec-fullscreen-button .fullscreen-off {
     display: inline;
-  }
-
-  /* Floating button specific styles */
-  .ec-fullscreen-button-floating {
-    color: #ffffff !important;
-    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.3);
-    transition:
-      opacity 0.2s,
-      background-color 0.2s,
-      border-color 0.2s,
-      transform 0.2s ease;
-  }
-
-  .ec-fullscreen-button-floating:hover {
-    background-color: var(
-      --sl-color-gray-5,
-      rgba(255, 255, 255, 0.2)
-    ) !important;
-    transform: scale(1.1);
-  }
-
-  .ec-fullscreen-button-floating:focus {
-    outline: 2px solid var(--sl-color-gray-7, rgba(255, 255, 255, 0.8));
-    outline-offset: 0.125rem;
-  }
-
-  /* Show floating button on focus-within for accessibility */
-  .expressive-code:focus-within .ec-fullscreen-button-floating {
-    opacity: 0.8 !important;
   }
 
   /* Fullscreen button container for frameless code blocks */
