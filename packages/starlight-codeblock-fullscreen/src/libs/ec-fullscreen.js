@@ -28,254 +28,6 @@ function initECFullscreen(config) {
       currentZoom: 100,
       focusTrapHandler: null,
     };
-    
-    // CSS styles for fullscreen functionality.
-    const styles = `
-  .ec-fullscreen-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(76, 75, 75, 0.8);
-    color: #ffffff;
-    z-index: 9999;
-    overflow: auto;
-    padding: 1.25rem;
-    box-sizing: border-box;
-    visibility: hidden;
-    transform: scale(0.01);
-    transition: transform cubic-bezier(0.17, 0.67, 0.5, 0.71) ${config.animationDuration}ms;
-    outline: none;
-  }
-
-  .ec-fullscreen-container.is-open {
-    visibility: visible;
-    transform: scale(1);
-  }
-
-  .expressive-code.ec-fullscreen-active {
-    width: 100% !important;
-    max-width: none !important;
-    height: auto !important;
-    margin: 0 !important;
-    margin-bottom: 4rem !important;
-    background-color: #1e1e1e;
-    border-radius: 0.625rem;
-    box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.5);
-  }
-
-  .ec-fullscreen-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.75rem;
-    height: 1.75rem;
-    padding: 0.25rem;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.2s, background-color 0.2s, border-color 0.2s, transform 0.2s ease;
-    border-radius: 0.25rem;
-    color: inherit;
-    position: relative;
-  }
-
-  .ec-fullscreen-button:hover {
-    opacity: 1;
-    background-color: var(--sl-color-gray-5, rgba(255, 255, 255, 0.1));
-    border-color: var(--sl-color-gray-7, rgba(255, 255, 255, 0.5));
-    transform: scale(1.1);
-  }
-
-  .ec-fullscreen-button:focus {
-    outline: 2px solid var(--sl-color-gray-1, rgba(255, 255, 255, 0.5));
-    outline-offset: 0.125rem;
-  }
-
-  .ec-fullscreen-button .fullscreen-on {
-    display: inline;
-  }
-
-  .ec-fullscreen-button .fullscreen-off {
-    display: none;
-  }
-
-  .expressive-code.ec-fullscreen-active .ec-fullscreen-button .fullscreen-on {
-    display: none;
-  }
-
-  .expressive-code.ec-fullscreen-active .ec-fullscreen-button .fullscreen-off {
-    display: inline;
-  }
-
-  /* Floating button specific styles */
-  .ec-fullscreen-button-floating {
-    color: #ffffff !important;
-    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.3);
-    transition: opacity 0.2s, background-color 0.2s, border-color 0.2s, transform 0.2s ease;
-  }
-
-  .ec-fullscreen-button-floating:hover {
-    background-color: var(--sl-color-gray-5, rgba(255, 255, 255, 0.2)) !important;
-    transform: scale(1.1);
-  }
-
-  .ec-fullscreen-button-floating:focus {
-    outline: 2px solid var(--sl-color-gray-7, rgba(255, 255, 255, 0.8));
-    outline-offset: 0.125rem;
-  }
-
-  /* Show floating button on focus-within for accessibility */
-  .expressive-code:focus-within .ec-fullscreen-button-floating {
-    opacity: 0.8 !important;
-  }
-
-  /* Fullscreen button container for frameless code blocks */
-  .ec-fullscreen {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: auto;
-    z-index: 15;
-  }
-
-  .ec-fullscreen .ec-fullscreen-button {
-    color: var(--ec-txt-clr, currentColor);
-    pointer-events: auto !important;
-    cursor: pointer !important;
-    transition: opacity 0.2s, background-color 0.2s, border-color 0.2s, transform 0.2s ease;
-  }
-
-  .ec-fullscreen .ec-fullscreen-button:hover {
-    background-color: var(--sl-color-gray-5, rgba(255, 255, 255, 0.2));
-    opacity: 1;
-    transform: scale(1.1);
-  }
-
-  /* Ensure fullscreen container has proper text color */
-  .ec-fullscreen-container {
-    color: var(--ec-txt-clr, var(--sl-color-white, #ffffff));
-  }
-
-  /* Hint message below code block in fullscreen */
-  .ec-fullscreen-hint {
-    position: absolute;
-    bottom: 1.25rem;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.8);
-    color: #ffffff;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.5rem;
-    font-size: 0.75rem;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    opacity: 0;
-    animation: simpleShow 0.3s ease 1s forwards;
-    pointer-events: none;
-    z-index: 10110;
-    backdrop-filter: blur(0.25rem);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.3);
-  }
-
-  @keyframes simpleShow {
-    to {
-      opacity: 0.85;
-    }
-  }
-
-  .ec-fullscreen-hint kbd {
-    background-color: rgba(255, 255, 255, 0.2);
-    padding: 0.125rem 0.375rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: bold;
-    margin: 0 0.125rem;
-  }
-
-  /* Custom tooltip for fullscreen button */
-  .ec-fullscreen-button[data-tooltip]:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    right: 100%;
-    top: 50%;
-    transform: translateY(-50%);
-    margin-right: 0.5rem;
-    background-color: var(--sl-color-black, #000000);
-    color: var(--sl-color-white, #ffffff);
-    padding: 0.375rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 1rem;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    white-space: nowrap;
-    z-index: 1900;
-    opacity: 0;
-    animation: tooltipFadeIn 0.2s ease 0.5s forwards;
-    pointer-events: none;
-    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--sl-color-gray-6, rgba(255, 255, 255, 0.1));
-  }
-
-  /* Tooltip arrow */
-  .ec-fullscreen-button[data-tooltip]:hover::before {
-    content: '';
-    position: absolute;
-    right: 100%;
-    top: 50%;
-    transform: translateY(-50%) translateX(1px);
-    margin-right: 0.25rem;
-    width: 0;
-    height: 0;
-    border-top: 0.25rem solid transparent;
-    border-bottom: 0.25rem solid transparent;
-    font-size: 1rem;
-    border-left: 0.25rem solid var(--sl-color-black, #000000);
-    z-index: 1901;
-    opacity: 0;
-    animation: tooltipFadeIn 0.2s ease 0.5s forwards;
-    pointer-events: none;
-  }
-
-  @keyframes tooltipFadeIn {
-    to {
-      opacity: 1;
-    }
-  }
-
-  /* Ensure tooltip positioning works correctly for header buttons */
-  .ec-fullscreen-button {
-    position: relative;
-  }
-
-  /* Tooltip positioning adjustments for floating buttons */
-  .ec-fullscreen .ec-fullscreen-button[data-tooltip]:hover::after {
-    right: 100%;
-    top: 50%;
-    transform: translateY(-50%);
-    margin-right: 0.75rem;
-  }
-
-  .ec-fullscreen .ec-fullscreen-button[data-tooltip]:hover::before {
-    right: 100%;
-    top: 50%;
-    transform: translateY(-50%) translateX(1px);
-    margin-right: 0.5rem;
-  }
-
-  /* Respect user preference for reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    .ec-fullscreen-container {
-      transition: none;
-      transform: none;
-    }
-
-    .ec-fullscreen-container.is-open {
-      transform: none;
-    }
-  }
-`;
 
     /**
      * Zoom management for fullscreen functionality.
@@ -364,7 +116,6 @@ function initECFullscreen(config) {
 
       // Set to configured zoom level for fullscreen.
       zoomManager.setZoom(config.fullscreenZoomLevel);
-    
     }
 
     /**
@@ -381,13 +132,17 @@ function initECFullscreen(config) {
       }
     }
 
-    // Create and inject styles.
+    // Create and inject styles with animation duration from config.
     function injectStyles() {
       if (document.getElementById("expressive-code-fullscreen-styles")) return;
 
       const styleSheet = document.createElement("style");
       styleSheet.id = "expressive-code-fullscreen-styles";
-      styleSheet.textContent = styles;
+      
+      // Set CSS custom property for animation duration
+      document.documentElement.style.setProperty('--ec-fullscreen-animation-duration', `${config.animationDuration}ms`);
+      
+      // Note: CSS styles are now loaded separately via the integration
       document.head.appendChild(styleSheet);
     }
 

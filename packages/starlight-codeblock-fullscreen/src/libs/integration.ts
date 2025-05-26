@@ -26,13 +26,25 @@ export default function starlightCodeBlockFullscreenIntegration(userOptions: Cod
     hooks: {
       'astro:config:setup': async ({ injectScript }) => {
 
-        // Synchronously read the file content         
-        const fileContent = readFileSync(join(__dirname, 'ec-fullscreen.js'), 'utf-8');
+        // Read both CSS and JavaScript files
+        const cssContent = readFileSync(join(__dirname, 'ec-fullscreen.css'), 'utf-8');
+        const jsContent = readFileSync(join(__dirname, 'ec-fullscreen.js'), 'utf-8');
 
-        // Inject client-side script that will handle injection of fullscreen button and behavior
-        // Pass the configuration as stringified JSON.
+        // Inject client-side script that includes both CSS and JavaScript.
+        // The CSS is injected as a style element, and then the JavaScript is executed.
         injectScript('page', `
-            ${fileContent};
+            // Inject CSS styles
+            (function() {
+              if (document.getElementById("expressive-code-fullscreen-styles")) return;
+              
+              const styleSheet = document.createElement("style");
+              styleSheet.id = "expressive-code-fullscreen-styles";
+              styleSheet.textContent = \`${cssContent.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`;
+              document.head.appendChild(styleSheet);
+            })();
+            
+            // Execute JavaScript functionality
+            ${jsContent};
             initECFullscreen(${JSON.stringify(pluginOptions)});          
           `);
       },
