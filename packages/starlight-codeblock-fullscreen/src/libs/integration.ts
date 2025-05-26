@@ -27,7 +27,7 @@ export default function starlightCodeBlockFullscreenIntegration(userOptions: Cod
       'astro:config:setup': async ({ injectScript }) => {
 
         // Read both CSS and JavaScript files
-        const cssContent = readFileSync(join(__dirname, 'ec-fullscreen.css'), 'utf-8');
+        const cssContent = readFileSync(join(__dirname, '../styles/ec-fullscreen-style.css'), 'utf-8');
         const jsContent = readFileSync(join(__dirname, 'ec-fullscreen.js'), 'utf-8');
 
         // Inject client-side script that includes both CSS and JavaScript.
