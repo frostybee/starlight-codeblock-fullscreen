@@ -6,6 +6,7 @@ description: Configure the starlight-codeblock-fullscreen plugin.
 The Astro Starlight Code block Fullscreen plugin provides several configuration options to customize the fullscreen functionality for your code blocks. You can easily adjust these settings to fit your website's needs and user experience preferences.
 
 ## Configuring Code Block Fullscreen
+---
 
 The Starlight Code block Fullscreen plugin can be configured in your `astro.config.mjs` file. To do this, you need to import the plugin and add it to the `plugins` array in your Starlight configuration.
 
@@ -31,6 +32,7 @@ export default defineConfig({
 ```
 
 ## Configuration Options
+---
 
 The Starlight code block fullscreen plugin accepts an object with the following options. You can customize these options to fit your needs. Default values are provided for each option.
 
@@ -79,10 +81,12 @@ The Starlight code block fullscreen plugin accepts an object with the following 
 ### `animationDuration`
 
 - **Type**: `number`
-- **Default**: `150`
-- **Description**: The duration of the fullscreen animation in milliseconds. Controls how fast the transition to and from fullscreen mode occurs.
+- **Default**: `200`
+- **Range**: `150` to `700` milliseconds
+- **Description**: The duration of the fullscreen animation in milliseconds. Controls how fast the transition to and from fullscreen mode occurs. Values outside the range will be automatically adjusted to `200`.
 
 ## Example Configuration
+---
 
 Here's a complete example showing how to configure all available options:
 
@@ -103,7 +107,7 @@ export default defineConfig({
           fullscreenZoomLevel: 120,
           svgPathFullscreenOn: "M16 3h6v6h-2V5h-4V3zM2 3h6v2H4v4H2V3zm18 16v-4h2v6h-6v-2h4zM4 19h4v2H2v-6h2v4z",
           svgPathFullscreenOff: "M18 7h4v2h-6V3h2v4zM8 9H2V7h4V3h2v6zm10 8v4h-2v-6h6v2h-4zM8 15v6H6v-4H2v-2h6z",
-          animationDuration: 200,
+          animationDuration: 300,
         }),
       ],
       title: 'My Documentation',
@@ -113,14 +117,17 @@ export default defineConfig({
 ```
 
 :::note
-The above configuration customizes the tooltip text, enables both escape key and back button navigation, adds fullscreen buttons only to titled code blocks, sets a zoom level of 120% for better readability in fullscreen mode, uses custom SVG icons, and sets a slower animation duration of 200ms.
+The above configuration customizes the tooltip text, enables both escape key and back button navigation, adds fullscreen buttons only to titled code blocks, sets a zoom level of 120% for better readability in fullscreen mode, uses custom SVG icons, and sets a slower animation duration of 300ms.
 :::
 
-## Usage Notes
+## How it works?
+---
 
-- The plugin automatically detects and enhances all Expressive Code blocks on your pages,
-- Fullscreen mode includes smooth animations and transitions for a polished user experience,
-- The zoom level is automatically managed and restored when exiting fullscreen mode,
-- The fullscreen overlay has a dark background to minimize distractions and improve code focus,
-- You can customize the fullscreen button icons by providing your own SVG paths,
-- Animation duration can be adjusted to match your site's design preferences.
+- The plugin automatically detects and enhances all Expressive Code blocks on your pages
+- Fullscreen mode includes smooth animations and transitions for a polished user experience
+- The zoom level is automatically managed and restored when exiting fullscreen mode
+- Initial zoom levels are stored in localStorage for consistent user experience across sessions
+- The fullscreen overlay adapts to your page's background color for seamless integration
+- You can customize the fullscreen button icons by providing your own SVG paths
+- Animation duration is validated and constrained to ensure optimal performance (150-700ms)
+- Focus management ensures accessibility compliance with proper keyboard navigation

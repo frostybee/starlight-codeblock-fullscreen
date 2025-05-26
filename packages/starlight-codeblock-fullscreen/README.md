@@ -107,8 +107,9 @@ The plugin accepts the following configuration options:
 ### `animationDuration`
 
 - **Type**: `number`
-- **Default**: `150`
-- **Description**: Duration of fullscreen animations in milliseconds.
+- **Default**: `200`
+- **Range**: `150` to `700` milliseconds
+- **Description**: Duration of fullscreen animations in milliseconds. Values outside the range will be automatically adjusted to `200`.
 
 ## 📝 Example Configurations
 
@@ -131,7 +132,7 @@ starlightCodeblockFullscreen({
   exitOnBrowserBack: true,
   addToFramelessBlocks: true,
   fullscreenZoomLevel: 120,
-  animationDuration: 200,
+  animationDuration: 300,
   svgPathFullscreenOn: "M16 3h6v6h-2V5h-4V3zM2 3h6v2H4v4H2V3zm18 16v-4h2v6h-6v-2h4zM4 19h4v2H2v-6h2v4z",
   svgPathFullscreenOff: "M18 7h4v2h-6V3h2v4zM8 9H2V7h4V3h2v6zm10 8v4h-2v-6h6v2h-4zM8 15v6H6v-4H2v-2h6z",
 })
@@ -142,7 +143,7 @@ starlightCodeblockFullscreen({
 ```javascript
 starlightCodeblockFullscreen({
   fullscreenZoomLevel: 110,
-  animationDuration: 100,
+  animationDuration: 150,
 })
 ```
 
@@ -154,6 +155,7 @@ Once installed and configured, the plugin automatically:
 2. **Adds Fullscreen Buttons**: Inserts toggle buttons based on your configuration
 3. **Handles Interactions**: Manages fullscreen mode, animations, and user input
 4. **Maintains Accessibility**: Provides keyboard navigation and focus management
+5. **Manages Zoom State**: Intelligently detects, stores, and restores browser zoom levels
 
 ### User Interactions
 

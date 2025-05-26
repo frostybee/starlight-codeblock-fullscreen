@@ -239,10 +239,10 @@ function initECFullscreen(config) {
 
       button.innerHTML = `
       <svg class="fullscreen-on" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="currentColor" d="${config.svgPathFullscreenOn}"/>
+        <path fill="currentColor" d="${config.svgPathFullscreenOn}" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <svg class="fullscreen-off" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="currentColor" d="${config.svgPathFullscreenOff}"/>
+        <path fill="currentColor" d="${config.svgPathFullscreenOff}" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     `;
 
