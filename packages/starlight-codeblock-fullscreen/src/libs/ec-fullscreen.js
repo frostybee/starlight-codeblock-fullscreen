@@ -10,7 +10,7 @@ function initECFullscreen(config) {
     exitOnBrowserBack = true,
     addToFramelessBlocks = false,
     fullscreenZoomLevel = 150,
-    animationDuration = 150,
+    animationDuration = 200,
     svgPathFullscreenOn = "M16 3h6v6h-2V5h-4V3zM2 3h6v2H4v4H2V3zm18 16v-4h2v6h-6v-2h4zM4 19h4v2H2v-6h2v4z",
     svgPathFullscreenOff = "M18 7h4v2h-6V3h2v4zM8 9H2V7h4V3h2v6zm10 8v4h-2v-6h6v2h-4zM8 15v6H6v-4H2v-2h6z",
   } = config;
@@ -28,6 +28,15 @@ function initECFullscreen(config) {
       currentZoom: 100,
       focusTrapHandler: null,
     };
+
+    // Ensure animation duration is an integer between 150 and 700.
+    if (
+      !Number.isInteger(config.animationDuration) ||
+      config.animationDuration < 150 ||
+      config.animationDuration > 700
+    ) {
+      config.animationDuration = 200;
+    }
 
     /**
      * Zoom management for fullscreen functionality.
@@ -138,10 +147,13 @@ function initECFullscreen(config) {
 
       const styleSheet = document.createElement("style");
       styleSheet.id = "expressive-code-fullscreen-styles";
-      
+
       // Set CSS custom property for animation duration
-      document.documentElement.style.setProperty('--ec-fullscreen-animation-duration', `${config.animationDuration}ms`);
-      
+      document.documentElement.style.setProperty(
+        "--ec-fullscreen-animation-duration",
+        `${config.animationDuration}ms`
+      );
+
       // Note: CSS styles are now loaded separately via the integration
       document.head.appendChild(styleSheet);
     }
@@ -156,6 +168,10 @@ function initECFullscreen(config) {
       container.setAttribute("aria-modal", "true");
       container.setAttribute("aria-label", "Code block in fullscreen view");
       container.setAttribute("tabindex", "-1");
+      container.style.setProperty(
+        "--ec-fullscreen-animation-duration",
+        `${config.animationDuration}ms`
+      );
       document.body.appendChild(container);
     }
 
@@ -670,7 +686,6 @@ function initECFullscreen(config) {
       // Initialize zoom manager.
       zoomManager.init();
 
-      injectStyles();
       createFullscreenContainer();
       initializeFullscreenButtons();
     }
