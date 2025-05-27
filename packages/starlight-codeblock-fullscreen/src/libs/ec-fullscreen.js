@@ -20,6 +20,17 @@ function initECFullscreen(config) {
     if (window.expressiveCodeFullscreenInitialized) return;
     window.expressiveCodeFullscreenInitialized = true;
 
+    // Mobile detection utility
+    const isMobileDevice = () => {
+      return (
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        ) ||
+        "ontouchstart" in window ||
+        navigator.maxTouchPoints > 0 ||
+        window.innerWidth <= 768
+      ); // Additional check for small screens
+    };
     // Initialize fullscreen state.
     const fullscreenState = {
       isFullscreenActive: false,
@@ -40,6 +51,7 @@ function initECFullscreen(config) {
 
     /**
      * Zoom management for fullscreen functionality.
+     * Note: Zoom functionality is disabled on mobile devices due to poor CSS zoom support.
      */
     const zoomManager = {
       storageKey: "expressiveCodeFullscreenZoom",
@@ -93,6 +105,10 @@ function initECFullscreen(config) {
        * @param {number} level Zoom level (100 = 100%)
        */
       setZoom(level) {
+        // Skip zoom on mobile devices due to poor CSS zoom support
+        if (isMobileDevice()) {
+          return;
+        }
         document.body.style.zoom = `${level}%`;
       },
 
@@ -100,6 +116,10 @@ function initECFullscreen(config) {
        * Remove zoom styling to restore natural browser zoom.
        */
       removeZoomStyling() {
+        // Skip zoom on mobile devices due to poor CSS zoom support
+        if (isMobileDevice()) {
+          return;
+        }
         document.body.style.zoom = "";
       },
 
@@ -107,6 +127,11 @@ function initECFullscreen(config) {
        * Initialize zoom manager.
        */
       init() {
+        // Skip zoom initialization on mobile devices
+        if (isMobileDevice()) {
+          return;
+        }
+
         const currentZoom = this.getCurrentZoom();
         const storedInitial = this.getStoredInitialZoom();
 
