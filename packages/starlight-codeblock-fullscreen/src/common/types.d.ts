@@ -16,7 +16,7 @@ export default interface CodeBlockFullscreenOptions {
    */
   exitOnBrowserBack?: boolean;
   /**
-   * Whether to only add the fullscreen button to titled blocks.
+   * Whether to add the fullscreen button to untitled blocks (blocks without titles).
    * @default false
    */
   addToUntitledBlocks?: boolean;
