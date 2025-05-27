@@ -1,5 +1,11 @@
 # starlight-codeblock-fullscreen
 
+## 0.1.2
+
+### Patch Changes
+
+- [`2f1ea77`](https://github.com/frostybee/starlight-codeblock-fullscreen/commit/2f1ea77548e7316a0ab45ccccc83a5c41dc5cd5a) Thanks [@frostybee](https://github.com/frostybee)! - Initial public release
+
 ## 0.1.1
 
 ### Patch Changes
