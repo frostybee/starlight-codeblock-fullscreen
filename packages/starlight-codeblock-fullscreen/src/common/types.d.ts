@@ -19,7 +19,7 @@ export default interface CodeBlockFullscreenOptions {
    * Whether to only add the fullscreen button to titled blocks.
    * @default false
    */
-  addToFramelessBlocks?: boolean;
+  addToUntitledBlocks?: boolean;
   /**
    * The zoom level for the fullscreen view.
    * @default 150

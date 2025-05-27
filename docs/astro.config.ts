@@ -9,10 +9,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'Starlight Code Block Fullscreen',
-      favicon: '/images/full-screen.svg',
-      editLink: {
-        baseUrl: 'https://github.com/frostybee/starlight-codeblock-fullscreen/edit/main/docs/',
-      },
+      favicon: '/images/full-screen.svg',      
       plugins: [
         starlightCodeBlockFullscreen({
           fullscreenButtonTooltip: 'Toggle fullscreen view',

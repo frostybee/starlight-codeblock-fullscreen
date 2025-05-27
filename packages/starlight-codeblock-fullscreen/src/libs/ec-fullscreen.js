@@ -8,7 +8,7 @@ function initECFullscreen(config) {
     fullscreenButtonTooltip = "Toggle fullscreen view",
     enableEscapeKey = true,
     exitOnBrowserBack = true,
-    addToFramelessBlocks = false,
+    addToUntitledBlocks = false,
     fullscreenZoomLevel = 150,
     animationDuration = 200,
     svgPathFullscreenOn = "M16 3h6v6h-2V5h-4V3zM2 3h6v2H4v4H2V3zm18 16v-4h2v6h-6v-2h4zM4 19h4v2H2v-6h2v4z",
@@ -248,21 +248,23 @@ function initECFullscreen(config) {
       // Check if button already exists.
       if (codeBlock.querySelector(".ec-fullscreen-button")) return;
       // Find the figure element that contains the code block.
-      const figure = codeBlock.querySelector(".frame");
-      if (!figure) return; // Exit if no frame element found.
+      const captionFrame = codeBlock.querySelector(".frame");
+      if (!captionFrame) return; // Exit if no frame element found.
 
       // Check if the code block has a title/header or is a terminal so that the toggle fullscreen button can be added to the header.
       const hasTitleArea =
-        figure.classList.contains("has-title") ||
-        figure.classList.contains("is-terminal");
+        captionFrame.classList.contains("has-title") ||
+        captionFrame.classList.contains("is-terminal");
 
       // If configured to only add to titled blocks, skip blocks without titles or terminal.
-      if (!config.addToFramelessBlocks && !hasTitleArea) {
+      if (!config.addToUntitledBlocks && !hasTitleArea) {
         return;
       }
+      // For code blocks with titles or terminals, add button to the figcaption header.
+      const blockHeader = codeBlock.querySelector("figcaption.header");
       if (hasTitleArea) {
         // For code blocks with titles or terminals, add button to the figcaption header.
-        const blockHeader = codeBlock.querySelector("figcaption.header");
+        // const blockHeader = codeBlock.querySelector('figcaption.header');
 
         if (blockHeader) {
           const button = createFullscreenButton();
@@ -274,37 +276,33 @@ function initECFullscreen(config) {
           }
           // We need to position the button absolutely to the right of the header element (i.e. the code block's caption header).
           button.style.cssText = `
-          position: absolute;
-          right: 0.5rem;
-          top: 50%;
-          transform: translateY(-50%);
-          z-index: 100;
-        `;
+        position: absolute;
+        right: 0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 100;
+      `;
           blockHeader.appendChild(button);
         }
       } else {
         // For code blocks without titles, add button next to the copy code button.
         const copyButton = codeBlock.querySelector(".copy");
         if (copyButton) {
-          //TODO: simplify this by using the copy button's parent element as the container for the fullscreen button.
-          //TODO: simplify this by using the copy button's parent element as the container for the fullscreen button.
-          // We need to position the fullscreen button to the right of the copy button.
-          copyButton.style.cssText = `display: flex; justify-content: flex-start; flex-direction: row;`;
-          // Create a container for the fullscreen button.
-          const fullscreenContainer = document.createElement("div");
-          //   fullscreenContainer.className = "ec-fullscreen";
-          //   fullscreenContainer.style.cssText = `
-          //   position: absolute;
-          //   top: 3.125rem;
-          //   right: 0.5rem;
-          //   z-index: 15;
-          //   pointer-events: auto;
-          // `;
-          const button = createFullscreenButton();
-          fullscreenContainer.appendChild(button);
-          // Insert the fullscreen button container in the same parent as copy button.
-          // copyButton.parentNode.appendChild(fullscreenContainer);
-          copyButton.appendChild(button);
+          // Create a container for the fullscreen button
+          const btnContainer = document.createElement("div");
+          btnContainer.style.cssText = `
+          position: absolute;
+          top: 45px;
+          right: 12px;
+          z-index: 15;
+          pointer-events: auto;
+        `;
+          const toggleButton = createFullscreenButton();
+          btnContainer.appendChild(toggleButton);
+          if (captionFrame.offsetHeight > 95) {
+            // Add the toggle button only to code blocks whose height is greater than 95px.
+            copyButton.parentNode.appendChild(btnContainer);
+          }
         }
       }
     }
