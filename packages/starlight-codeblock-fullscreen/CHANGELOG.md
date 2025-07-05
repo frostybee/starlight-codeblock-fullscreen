@@ -1,5 +1,11 @@
 # starlight-codeblock-fullscreen
 
+## 0.1.4
+
+### Patch Changes
+
+- Refactored the implementation to remove the reliance on native browser zooming feature.
+
 ## 0.1.2
 
 ### Patch Changes

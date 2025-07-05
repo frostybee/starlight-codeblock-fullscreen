@@ -1,6 +1,6 @@
 {
   "name": "starlight-codeblock-fullscreen",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "license": "MIT",
   "description": "Add fullscreen functionality to codeblocks in your documentation website.",
   "author": "frostybee",
