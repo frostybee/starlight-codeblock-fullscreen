@@ -6,7 +6,7 @@ export default function starlightCodeBlockFullscreenPlugin(userConfig: CodeBlock
   return {
     name: 'starlight-codeblock-fullscreen-plugin',
     hooks: {
-      'config:setup'({ addIntegration, logger }) {        
+      'config:setup'({ addIntegration }) {        
         
         addIntegration(starlightCodeBlockFullscreenIntegration(userConfig));
       },

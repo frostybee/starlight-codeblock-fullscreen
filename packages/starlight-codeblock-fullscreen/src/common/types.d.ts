@@ -20,11 +20,7 @@ export default interface CodeBlockFullscreenOptions {
    * @default false
    */
   addToUntitledBlocks?: boolean;
-  /**
-   * The zoom level for the fullscreen view.
-   * @default 150
-   */
-  fullscreenZoomLevel?: number;
+  
   /**
    * The SVG path for the fullscreen button.
    * @default "M16 3h6v6h-2V5h-4V3zM2 3h6v2H4v4H2V3zm18 16v-4h2v6h-6v-2h4zM4 19h4v2H2v-6h2v4z"

@@ -3,48 +3,67 @@
  * Automatically adds fullscreen functionality to all Expressive Code blocks
  */
 function initECFullscreen(config) {
-  // Configuration options
+  // Configuration options.
   const {
     fullscreenButtonTooltip = "Toggle fullscreen view",
     enableEscapeKey = true,
     exitOnBrowserBack = true,
-    addToUntitledBlocks = false,
-    fullscreenZoomLevel = 150,
+    addToUntitledBlocks = false,    
     animationDuration = 200,
     svgPathFullscreenOn = "M16 3h6v6h-2V5h-4V3zM2 3h6v2H4v4H2V3zm18 16v-4h2v6h-6v-2h4zM4 19h4v2H2v-6h2v4z",
     svgPathFullscreenOff = "M18 7h4v2h-6V3h2v4zM8 9H2V7h4V3h2v6zm10 8v4h-2v-6h6v2h-4zM8 15v6H6v-4H2v-2h6z",
   } = config;
+
+   // Configuration options and constants.
+	const CONSTANTS = {
+		MIN_FONT_SIZE: 60,
+		MAX_FONT_SIZE: 500,
+		DEFAULT_FONT_SIZE: 100,
+		FONT_ADJUSTMENT: 10,
+		DOUBLE_CLICK_THRESHOLD: 600,
+		HINT_DISPLAY_TIME: 4000,
+		FADE_TRANSITION_TIME: 500,
+		MIN_BLOCK_HEIGHT: 95,
+		MIN_ANIMATION_DURATION: 150,
+		MAX_ANIMATION_DURATION: 700,
+		DEFAULT_ANIMATION_DURATION: 200
+	};
 
   document.addEventListener("DOMContentLoaded", () => {
    // Avoid duplicate initialization.
 	if (window.expressiveCodeFullscreenInitialized) return;
 	window.expressiveCodeFullscreenInitialized = true;
 
-	// Mobile detection utility
-	const isMobileDevice = () => {
-		return (
-			/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-			'ontouchstart' in window ||
-			navigator.maxTouchPoints > 0 ||
-			window.innerWidth <= 768
-		); // Additional check for small screens
-	};
 	// Initialize fullscreen state.
 	const fullscreenState = {
 		isFullscreenActive: false,
 		scrollPosition: 0,
 		originalCodeBlock: null,
-		fontSize: 100,
+		fontSize: CONSTANTS.DEFAULT_FONT_SIZE,
 		focusTrapHandler: null,
 	};
 
-	// Ensure animation duration is an integer between 150 and 700.
+	// Cache frequently used DOM elements.
+	const domCache = {
+		fullscreenContainer: null,
+		get container() {
+			if (!this.fullscreenContainer) {
+				this.fullscreenContainer = document.querySelector('.cb-fullscreen__container');
+			}
+			return this.fullscreenContainer;
+		},
+		clearCache() {
+			this.fullscreenContainer = null;
+		}
+	};
+
+	// Ensure animation duration is an integer between min and max values.
 	if (
 		!Number.isInteger(config.animationDuration) ||
-		config.animationDuration < 150 ||
-		config.animationDuration > 700
+		config.animationDuration < CONSTANTS.MIN_ANIMATION_DURATION ||
+		config.animationDuration > CONSTANTS.MAX_ANIMATION_DURATION
 	) {
-		config.animationDuration = 200;
+		config.animationDuration = CONSTANTS.DEFAULT_ANIMATION_DURATION;
 	}
 
 	/**
@@ -55,21 +74,21 @@ function initECFullscreen(config) {
 
 		/**
 		 * Load font size from localStorage.
-		 * @returns {number} Font size percentage (100 = 100%)
+		 * @returns {number} Font size percentage (default = 100%)
 		 */
 		loadFontSize() {
 			try {
 				const savedSize = localStorage.getItem(this.storageKey);
 				if (savedSize) {
 					const parsedSize = parseInt(savedSize, 10);
-					if (parsedSize >= 60 && parsedSize <= 500) {
+					if (parsedSize >= CONSTANTS.MIN_FONT_SIZE && parsedSize <= CONSTANTS.MAX_FONT_SIZE) {
 						return parsedSize;
 					}
 				}
 			} catch (e) {
 				console.warn('Could not load font size from localStorage');
 			}
-			return 100;
+			return CONSTANTS.DEFAULT_FONT_SIZE;
 		},
 
 		/**
@@ -90,7 +109,7 @@ function initECFullscreen(config) {
 		 * @param {HTMLElement} codeBlock The code block to apply font size to
 		 */
 		adjustFontSize(change, codeBlock) {
-			const newSize = Math.max(60, Math.min(500, fullscreenState.fontSize + change));
+			const newSize = Math.max(CONSTANTS.MIN_FONT_SIZE, Math.min(CONSTANTS.MAX_FONT_SIZE, fullscreenState.fontSize + change));
 			fullscreenState.fontSize = newSize;
 			this.saveFontSize(newSize);
 			this.applyFontSize(codeBlock);
@@ -101,8 +120,8 @@ function initECFullscreen(config) {
 		 * @param {HTMLElement} codeBlock The code block to apply font size to
 		 */
 		resetFontSize(codeBlock) {
-			fullscreenState.fontSize = 100;
-			this.saveFontSize(100);
+			fullscreenState.fontSize = CONSTANTS.DEFAULT_FONT_SIZE;
+			this.saveFontSize(CONSTANTS.DEFAULT_FONT_SIZE);
 			this.applyFontSize(codeBlock);
 		},
 
@@ -251,8 +270,6 @@ function initECFullscreen(config) {
 		// For code blocks with titles or terminals, add button to the figcaption header.
 		const blockHeader = codeBlock.querySelector('figcaption.header');
 		if (hasTitleArea) {
-			// For code blocks with titles or terminals, add button to the figcaption header.
-			// const blockHeader = codeBlock.querySelector('figcaption.header');
 
 			if (blockHeader) {
 				const button = createFullscreenButton();
@@ -273,24 +290,24 @@ function initECFullscreen(config) {
 				blockHeader.appendChild(button);
 			}
 		} else {
-			// For code blocks without titles, add button at the bottom right corner.
-			const copyButton = codeBlock.querySelector('.copy');
+			// For code blocks without titles, add button next to the copy code button.
+			const copyButton = codeBlock.querySelector(".copy");
 			if (copyButton) {
-				// Create a container for the fullscreen button
-				const btnContainer = document.createElement('div');
-				btnContainer.style.cssText = `
-          position: absolute;
-          bottom: 6px;
-          right: 12px;
-          z-index: 15;
-          pointer-events: auto;
-        `;
-				const toggleButton = createFullscreenButton();
-				btnContainer.appendChild(toggleButton);
-				if (captionFrame.offsetHeight > 95) {
-					// Add the toggle button only to code blocks whose height is greater than 95px.
-					copyButton.parentNode.appendChild(btnContainer);
-				}
+			  // Create a container for the fullscreen button
+			  const btnContainer = document.createElement("div");
+			  btnContainer.style.cssText = `
+			  position: absolute;
+			  top: 50px;
+			  right: 12px;
+			  z-index: 15;
+			  pointer-events: auto;
+			`;
+			  const toggleButton = createFullscreenButton();
+			  btnContainer.appendChild(toggleButton);
+			  if (captionFrame.offsetHeight > CONSTANTS.MIN_BLOCK_HEIGHT) {
+				// Add the toggle button only to code blocks whose height is greater than 95px.
+				copyButton.parentNode.appendChild(btnContainer);
+			  }
 			}
 		}
 	}
@@ -333,7 +350,7 @@ function initECFullscreen(config) {
 	}
 
 	function toggleFullscreen(codeBlock) {
-		const fullscreenContainer = document.querySelector('.cb-fullscreen__container');
+		const fullscreenContainer = domCache.container;
 
 		if (fullscreenState.isFullscreenActive) {
 			exitFullscreen(fullscreenContainer);
@@ -422,18 +439,18 @@ function initECFullscreen(config) {
 			// Auto-hide hint after 4 seconds.
 			setTimeout(() => {
 				if (hint && hint.parentNode) {
-					// Use JavaScript to fade out smoothly, overriding CSS animation.
+					// Use JavaScript to fade out smoothly, overriding CSS animation
 					hint.style.setProperty('transition', 'opacity 0.9s ease', 'important');
 					hint.style.setProperty('opacity', '0', 'important');
 
-					// Remove the hint completely after fade out completes.
+					// Remove the hint completely after fade out completes
 					setTimeout(() => {
 						if (hint && hint.parentNode) {
 							hint.remove();
 						}
-					}, 500); // Wait for fade transition to complete.
+					}, CONSTANTS.FADE_TRANSITION_TIME);
 				}
-			}, 4000);
+			}, CONSTANTS.HINT_DISPLAY_TIME);
 		}
 
 		fullscreenContainer.classList.add('cb-fullscreen__container--open');
@@ -469,10 +486,8 @@ function initECFullscreen(config) {
 		fullscreenContainer.style.backgroundColor = '';
 		fullscreenContainer.style.color = '';
 
-		// Clear container contents.
-		while (fullscreenContainer.firstChild) {
-			fullscreenContainer.removeChild(fullscreenContainer.firstChild);
-		}
+		// Clear container contents (optimized)
+		fullscreenContainer.innerHTML = '';
 
 		fullscreenState.isFullscreenActive = false;
 
@@ -534,7 +549,7 @@ function initECFullscreen(config) {
 	 */
 	function handleKeyup(event) {
 		if (event.key === 'Escape' && fullscreenState.isFullscreenActive) {
-			const fullscreenContainer = document.querySelector('.cb-fullscreen__container');
+			const fullscreenContainer = domCache.container;
 			if (fullscreenContainer) {
 				exitFullscreen(fullscreenContainer);
 			}
@@ -565,7 +580,7 @@ function initECFullscreen(config) {
 			// Prevent the history.back() call in exitFullscreen from causing a loop
 			const isBackButtonPressed = !event.state || !event.state.fullscreenActive;
 			if (isBackButtonPressed) {
-				const fullscreenContainer = document.querySelector('.cb-fullscreen__container');
+				const fullscreenContainer = domCache.container;
 				if (fullscreenContainer) {
 					// Temporarily disable back button handling to prevent recursion
 					removePopStateListener();
@@ -592,12 +607,12 @@ function initECFullscreen(config) {
 	}
 
 	/**
-	 * Add focus trap to keep focus within the fullscreen container.
+	 * Add focus trap to keep focus within the fullscreen container
 	 */
 	function addFocusTrap(container) {
-		// Get all focusable elements within the container.
+		// Get all focusable elements within the container (improved selector)
 		const focusableElements = container.querySelectorAll(
-			'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+			'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), [contenteditable="true"], summary, audio[controls], video[controls]'
 		);
 
 		if (focusableElements.length === 0) return;
@@ -631,33 +646,40 @@ function initECFullscreen(config) {
 	 * Remove focus trap.
 	 */
 	function removeFocusTrap() {
-		const container = document.querySelector('.cb-fullscreen__container');
+		const container = domCache.container;
 		if (container && fullscreenState.focusTrapHandler) {
 			container.removeEventListener('keydown', fullscreenState.focusTrapHandler);
 			fullscreenState.focusTrapHandler = null;
 		}
 	}
 
-	// Add event listeners to font controls.
+	// Add event listeners to font controls with improved double-click detection
 	function addFontControlListeners(fontControls, codeBlock) {
 		const decreaseBtn = fontControls.querySelector('.cb-fullscreen__font-btn--decrease');
 		const increaseBtn = fontControls.querySelector('.cb-fullscreen__font-btn--increase');
-		let lastDecreaseClickTime = 0;
-		const resetThreshold = 500;
+		let decreaseClickData = { lastClickTime: 0, clickCount: 0 };
 
 		decreaseBtn.addEventListener('click', (event) => {
-			const currentTime = new Date().getTime();
-			if (currentTime - lastDecreaseClickTime < resetThreshold) {
-				fontManager.resetFontSize(codeBlock);
+			const currentTime = Date.now();
+			const timeDifference = currentTime - decreaseClickData.lastClickTime;
+
+			if (timeDifference < CONSTANTS.DOUBLE_CLICK_THRESHOLD) {
+				decreaseClickData.clickCount++;
+				if (decreaseClickData.clickCount === 2) {
+					fontManager.resetFontSize(codeBlock);
+					decreaseClickData.clickCount = 0;
+				}
 			} else {
-				fontManager.adjustFontSize(-10, codeBlock);
+				decreaseClickData.clickCount = 1;
+				fontManager.adjustFontSize(-CONSTANTS.FONT_ADJUSTMENT, codeBlock);
 			}
-			lastDecreaseClickTime = currentTime;
+
+			decreaseClickData.lastClickTime = currentTime;
 			event.target.blur();
 		});
 
 		increaseBtn.addEventListener('click', (event) => {
-			fontManager.adjustFontSize(10, codeBlock);
+			fontManager.adjustFontSize(CONSTANTS.FONT_ADJUSTMENT, codeBlock);
 			event.target.blur();
 		});
 	}
