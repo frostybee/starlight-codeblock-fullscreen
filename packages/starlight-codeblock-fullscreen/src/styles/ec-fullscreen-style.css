@@ -3,7 +3,7 @@
 
 @layer ecFullscreen {
 
-  .ec-fullscreen-container {
+  .cb-fullscreen__container {
     position: fixed;
     top: 0;
     left: 0;
@@ -19,14 +19,26 @@
     transform: scale(0.01);
     transition: transform cubic-bezier(0.17, 0.67, 0.5, 0.71) var(--ec-fullscreen-animation-duration, 150ms);
     outline: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
   }
 
-  .ec-fullscreen-container.is-open {
+  .cb-fullscreen__content {
+    width: 100%;
+    max-width: 95%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .cb-fullscreen__container--open {
     visibility: visible;
     transform: scale(1);
   }
 
-  .expressive-code.ec-fullscreen-active {
+  .expressive-code.cb-fullscreen__active {
     width: 100% !important;
     max-width: none !important;
     height: auto !important;
@@ -37,7 +49,16 @@
     box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.5);
   }
 
-  .ec-fullscreen-button {
+  .expressive-code.cb-fullscreen__active pre,
+  .expressive-code.cb-fullscreen__active code {
+    font-size: calc(1em * var(--ec-font-scale, 1)) !important;
+  }
+
+  .expressive-code.cb-fullscreen__active .frame {
+    font-size: calc(1em * var(--ec-font-scale, 1)) !important;
+  }
+
+  .cb-fullscreen__button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -58,7 +79,7 @@
     position: relative;
   }
 
-  .ec-fullscreen-button:hover {
+  .cb-fullscreen__button:hover {
     opacity: 1;
     background-color: var(--sl-color-gray-5, rgba(255, 255, 255, 0.1));
     /* border-color: var(--sl-color-gray-7, rgba(255, 255, 255, 0.5)); */
@@ -66,44 +87,44 @@
     transform: scale(1.1);
   }
 
-  .ec-fullscreen-button:focus {
+  .cb-fullscreen__button:focus {
     outline: 2px solid var(--sl-color-white, rgba(255, 255, 255, 0.5));
     outline-offset: 0.125rem;
   }
 
-  .ec-fullscreen-button .fullscreen-on {
+  .cb-fullscreen__button .fullscreen-on {
     display: inline;
   }
 
-  .ec-fullscreen-button .fullscreen-off {
+  .cb-fullscreen__button .fullscreen-off {
     display: none;
   }
 
-  .expressive-code.ec-fullscreen-active .ec-fullscreen-button .fullscreen-on {
+  .expressive-code.cb-fullscreen__active .cb-fullscreen__button .fullscreen-on {
     display: none;
   }
 
-  .expressive-code.ec-fullscreen-active .ec-fullscreen-button .fullscreen-off {
+  .expressive-code.cb-fullscreen__active .cb-fullscreen__button .fullscreen-off {
     display: inline;
   }
 
   /* Ensure fullscreen container has proper text color */
-  .ec-fullscreen-container {
+  .cb-fullscreen__container {
     color: var(--ec-txt-clr, var(--sl-color-white, #ffffff));
   }
 
 
 
   /* Custom tooltip for fullscreen button */
-  .ec-fullscreen-button[data-tooltip]:hover::after {
+  .cb-fullscreen__button[data-tooltip]:hover::after {
     content: attr(data-tooltip);
     position: absolute;
     right: 100%;
     top: 50%;
     transform: translateY(-50%);
     margin-right: 0.5rem;
-    background-color: var(--sl-color-black, #000000);
-    color: var(--sl-color-white, #ffffff);
+    background-color: var(--sl-color-gray-5, #000000);
+    color: var(--sl-color-text, #ffffff);
     padding: 0.375rem 0.5rem;
     border-radius: 0.25rem;
     font-size: 1rem;
@@ -115,11 +136,11 @@
     animation: tooltipFadeIn 0.2s ease 0.5s forwards;
     pointer-events: none;
     box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--sl-color-gray-6, rgba(255, 255, 255, 0.1));
+    border: 1px solid var(--sl-color-gray-4, rgba(255, 255, 255, 0.1));
   }
 
   /* Tooltip arrow */
-  .ec-fullscreen-button[data-tooltip]:hover::before {
+  .cb-fullscreen__button[data-tooltip]:hover::before {
     content: "";
     position: absolute;
     right: 100%;
@@ -131,7 +152,7 @@
     border-top: 0.25rem solid transparent;
     border-bottom: 0.25rem solid transparent;
     font-size: 1rem;
-    border-left: 0.25rem solid var(--sl-color-black, #000000);
+    border-left: 0.25rem solid var(--sl-color-gray-5, #000000);
     z-index: 1901;
     opacity: 0;
     animation: tooltipFadeIn 0.2s ease 0.5s forwards;
@@ -145,21 +166,21 @@
   }
 
   /* Ensure tooltip positioning works correctly for header buttons */
-  .ec-fullscreen-button {
+  .cb-fullscreen__button {
     position: relative;
   }
 
   /* Hint message below code block in fullscreen */
-  .ec-fullscreen-hint {
+  .cb-fullscreen__hint {
     position: absolute;
     bottom: 1.25rem;
     left: 50%;
     transform: translateX(-50%);
     background-color: rgba(0, 0, 0, 0.8);
     color: #ffffff;
-    padding: 0.25rem 0.5rem;
+    padding: 0.75rem 1rem;
     border-radius: 0.5rem;
-    font-size: 0.75rem;
+    font-size: 1rem;
     font-family:
       -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     opacity: 0;
@@ -177,7 +198,7 @@
     }
   }
 
-  .ec-fullscreen-hint kbd {
+  .cb-fullscreen__hint kbd {
     background-color: rgba(255, 255, 255, 0.2);
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
@@ -189,57 +210,198 @@
 
   /* Mobile-specific optimizations */
   @media (max-width: 768px) {
-    .ec-fullscreen-container {
+    .cb-fullscreen__container {
       padding: 0.75rem;
     }
 
-    .expressive-code.ec-fullscreen-active {
+    .expressive-code.cb-fullscreen__active {
       margin-bottom: 2rem !important;
       border-radius: 0.375rem;
     }
 
-    .ec-fullscreen-button {
+    .cb-fullscreen__button {
       width: 2rem;
       height: 2rem;
       padding: 0.375rem;
     }
 
-    .ec-fullscreen-hint {
+    .cb-fullscreen__hint {
       bottom: 0.75rem;
-      font-size: 0.875rem;
-      padding: 0.375rem 0.75rem;
+      font-size: 1.125rem;
+      padding: 0.5rem 1rem;
     }
 
     /* Disable tooltips on mobile to prevent issues with touch */
-    .ec-fullscreen-button[data-tooltip]:hover::after,
-    .ec-fullscreen-button[data-tooltip]:hover::before {
+    .cb-fullscreen__button[data-tooltip]:hover::after,
+    .cb-fullscreen__button[data-tooltip]:hover::before {
       display: none;
     }
   }
 
   /* Touch device optimizations */
   @media (hover: none) and (pointer: coarse) {
-    .ec-fullscreen-button:hover {
+    .cb-fullscreen__button:hover {
       transform: none;
       background-color: transparent;
       border: none;
     }
 
-    .ec-fullscreen-button[data-tooltip]:hover::after,
-    .ec-fullscreen-button[data-tooltip]:hover::before {
+    .cb-fullscreen__button[data-tooltip]:hover::after,
+    .cb-fullscreen__button[data-tooltip]:hover::before {
       display: none;
     }
   }
 
+  /* Font size controls */
+  .cb-fullscreen__font-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--sl-color-bg-nav , var(--sl-color-gray-6, rgba(0, 0, 0, 0.1)));
+    border-radius: 8px;
+    padding: 0.25rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    justify-content: center;
+  }
+
+  .cb-fullscreen__font-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    padding: 0.5rem;
+    margin-left: 0.5rem;
+    background: var(--sl-color-gray-5);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--sl-color-white, #ffffff);
+    transition: all 0.2s ease;
+    position: relative;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .cb-fullscreen__font-btn:hover {
+    background: var(--sl-color-gray-4, rgba(255, 255, 255, 0.15));
+    transform: scale(1.05);
+  }
+
+
+  .cb-fullscreen__font-btn:focus {
+    outline: 2px solid var(--sl-color-white, rgba(255, 255, 255, 0.5));
+    outline-offset: 0.125rem;
+  }
+
+  .cb-fullscreen__font-btn:active {
+    transform: scale(0.95);
+  }
+
+  .cb-fullscreen__font-btn svg {
+    width: 1rem;
+    height: 1rem;
+    stroke-width: 2.5;
+  }
+
+  /* Mobile optimizations for font controls */
+  @media (max-width: 768px) {
+    .cb-fullscreen__content {
+      max-width: 95%;
+      gap: 0.75rem;
+    }
+
+    .cb-fullscreen__font-btn {
+      width: 2.5rem;
+      height: 2.5rem;
+      padding: 0.5rem;
+    }
+
+    .cb-fullscreen__font-btn svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  /* Tooltip styles for font buttons */
+  .cb-fullscreen__font-btn--decrease::after {
+    content: attr(title);
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    /* background-color: var(--sl-color-gray-2); */
+    background-color: var(--sl-color-gray-5, #000000);
+    /* color: var(--sl-text-reverse, #ffffff); */
+    padding: 0.375rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    pointer-events: none;
+    z-index: 10001;
+    margin-right: 0.5rem;
+    border: 1px solid var(--sl-color-gray-4, rgba(255, 255, 255, 0.3));
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.3);
+  }
+
+  .cb-fullscreen__font-btn--decrease:hover::after {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .cb-fullscreen__font-btn--increase::after {
+    content: attr(title);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--sl-color-gray-5, #000000);
+    /* color: var(--sl-text-, #ffffff); */
+    padding: 0.375rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: 400;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    pointer-events: none;
+    z-index: 10001;
+    margin-left: 0.5rem;
+    border: 1px solid var(--sl-color-gray-4, rgba(255, 255, 255, 0.3));
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.3);
+  }
+
+  .cb-fullscreen__font-btn--increase:hover::after {
+    opacity: 1;
+    visibility: visible;
+  }
+
   /* Respect user preference for reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    .ec-fullscreen-container {
+    .cb-fullscreen__container {
       transition: none;
       transform: none;
     }
 
-    .ec-fullscreen-container.is-open {
+    .cb-fullscreen__container--open {
       transform: none;
+    }
+
+    .cb-fullscreen__font-btn {
+      transition: none;
+    }
+
+    .cb-fullscreen__font-btn:hover {
+      transform: none;
+    }
+
+    .cb-fullscreen__font-btn--decrease::after,
+    .cb-fullscreen__font-btn--increase::after {
+      transition: none;
     }
   }
 }

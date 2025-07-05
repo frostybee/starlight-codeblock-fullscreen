@@ -16,235 +16,198 @@ function initECFullscreen(config) {
   } = config;
 
   document.addEventListener("DOMContentLoaded", () => {
-    // Avoid duplicate initialization.
-    if (window.expressiveCodeFullscreenInitialized) return;
-    window.expressiveCodeFullscreenInitialized = true;
+   // Avoid duplicate initialization.
+	if (window.expressiveCodeFullscreenInitialized) return;
+	window.expressiveCodeFullscreenInitialized = true;
 
-    // Mobile detection utility
-    const isMobileDevice = () => {
-      return (
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
-        ) ||
-        "ontouchstart" in window ||
-        navigator.maxTouchPoints > 0 ||
-        window.innerWidth <= 768
-      ); // Additional check for small screens
-    };
-    // Initialize fullscreen state.
-    const fullscreenState = {
-      isFullscreenActive: false,
-      scrollPosition: 0,
-      originalCodeBlock: null,
-      currentZoom: 100,
-      focusTrapHandler: null,
-    };
+	// Mobile detection utility
+	const isMobileDevice = () => {
+		return (
+			/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+			'ontouchstart' in window ||
+			navigator.maxTouchPoints > 0 ||
+			window.innerWidth <= 768
+		); // Additional check for small screens
+	};
+	// Initialize fullscreen state.
+	const fullscreenState = {
+		isFullscreenActive: false,
+		scrollPosition: 0,
+		originalCodeBlock: null,
+		fontSize: 100,
+		focusTrapHandler: null,
+	};
 
-    // Ensure animation duration is an integer between 150 and 700.
-    if (
-      !Number.isInteger(config.animationDuration) ||
-      config.animationDuration < 150 ||
-      config.animationDuration > 700
-    ) {
-      config.animationDuration = 200;
-    }
+	// Ensure animation duration is an integer between 150 and 700.
+	if (
+		!Number.isInteger(config.animationDuration) ||
+		config.animationDuration < 150 ||
+		config.animationDuration > 700
+	) {
+		config.animationDuration = 200;
+	}
 
-    /**
-     * Zoom management for fullscreen functionality.
-     * Note: Zoom functionality is disabled on mobile devices due to poor CSS zoom support.
-     */
-    const zoomManager = {
-      storageKey: "expressiveCodeFullscreenZoom",
+	/**
+	 * Font size management for fullscreen functionality.
+	 */
+	const fontManager = {
+		storageKey: 'expressiveCodeFullscreenFontSize',
 
-      /**
-       * Get current browser zoom level as percentage.
-       * @returns {number} Zoom level (100 = 100%)
-       */
-      getCurrentZoom() {
-        return Math.round(window.devicePixelRatio * 100);
-      },
+		/**
+		 * Load font size from localStorage.
+		 * @returns {number} Font size percentage (100 = 100%)
+		 */
+		loadFontSize() {
+			try {
+				const savedSize = localStorage.getItem(this.storageKey);
+				if (savedSize) {
+					const parsedSize = parseInt(savedSize, 10);
+					if (parsedSize >= 60 && parsedSize <= 500) {
+						return parsedSize;
+					}
+				}
+			} catch (e) {
+				console.warn('Could not load font size from localStorage');
+			}
+			return 100;
+		},
 
-      /**
-       * Get stored zoom data from localStorage.
-       * @returns {object} Zoom data object
-       */
-      getZoomData() {
-        try {
-          const data = localStorage.getItem(this.storageKey);
-          return data ? JSON.parse(data) : {};
-        } catch (e) {
-          return {};
-        }
-      },
+		/**
+		 * Save font size to localStorage.
+		 * @param {number} size Font size percentage
+		 */
+		saveFontSize(size) {
+			try {
+				localStorage.setItem(this.storageKey, size.toString());
+			} catch (e) {
+				console.warn('Could not save font size to localStorage');
+			}
+		},
 
-      /**
-       * Store initial zoom level.
-       * @param {number} zoom Zoom level to store
-       */
-      storeInitialZoom(zoom) {
-        const data = this.getZoomData();
-        data.initialZoom = zoom;
-        try {
-          localStorage.setItem(this.storageKey, JSON.stringify(data));
-        } catch (e) {
-          console.warn("Could not store zoom level in localStorage");
-        }
-      },
+		/**
+		 * Adjust font size by a given amount.
+		 * @param {number} change Amount to change font size by
+		 * @param {HTMLElement} codeBlock The code block to apply font size to
+		 */
+		adjustFontSize(change, codeBlock) {
+			const newSize = Math.max(60, Math.min(500, fullscreenState.fontSize + change));
+			fullscreenState.fontSize = newSize;
+			this.saveFontSize(newSize);
+			this.applyFontSize(codeBlock);
+		},
 
-      /**
-       * Get stored initial zoom level.
-       * @returns {number|null} Initial zoom level or null if not stored
-       */
-      getStoredInitialZoom() {
-        const data = this.getZoomData();
-        return data.initialZoom || null;
-      },
+		/**
+		 * Reset font size to default.
+		 * @param {HTMLElement} codeBlock The code block to apply font size to
+		 */
+		resetFontSize(codeBlock) {
+			fullscreenState.fontSize = 100;
+			this.saveFontSize(100);
+			this.applyFontSize(codeBlock);
+		},
 
-      /**
-       * Set zoom level using CSS.
-       * @param {number} level Zoom level (100 = 100%)
-       */
-      setZoom(level) {
-        // Skip zoom on mobile devices due to poor CSS zoom support
-        if (isMobileDevice()) {
-          return;
-        }
-        document.body.style.zoom = `${level}%`;
-      },
+		/**
+		 * Apply font size to the code block.
+		 * @param {HTMLElement} codeBlock The code block to apply font size to
+		 */
+		applyFontSize(codeBlock) {
+			if (codeBlock) {
+				const scale = fullscreenState.fontSize / 100;
+				codeBlock.style.setProperty('--ec-font-scale', scale);
+			}
+		},
+	};
 
-      /**
-       * Remove zoom styling to restore natural browser zoom.
-       */
-      removeZoomStyling() {
-        // Skip zoom on mobile devices due to poor CSS zoom support
-        if (isMobileDevice()) {
-          return;
-        }
-        document.body.style.zoom = "";
-      },
 
-      /**
-       * Initialize zoom manager.
-       */
-      init() {
-        // Skip zoom initialization on mobile devices
-        if (isMobileDevice()) {
-          return;
-        }
+	// Create fullscreen container.
+	function createFullscreenContainer() {
+		if (document.querySelector('.cb-fullscreen__container')) return;
 
-        const currentZoom = this.getCurrentZoom();
-        const storedInitial = this.getStoredInitialZoom();
+		const container = document.createElement('div');
+		container.className = 'cb-fullscreen__container';
+		container.setAttribute('role', 'dialog');
+		container.setAttribute('aria-modal', 'true');
+		container.setAttribute('aria-label', 'Code block in fullscreen view');
+		container.setAttribute('tabindex', '-1');
+		container.style.setProperty(
+			'--ec-fullscreen-animation-duration',
+			`${config.animationDuration}ms`
+		);
+		document.body.appendChild(container);
+	}
 
-        if (!storedInitial) {
-          this.storeInitialZoom(currentZoom);
-        }
-      },
-    };
+	// Create font size controls.
+	function createFontSizeControls() {
+		const controls = document.createElement('div');
+		controls.className = 'cb-fullscreen__font-controls';
+		controls.innerHTML = `
+			<button class="cb-fullscreen__font-btn cb-fullscreen__font-btn--decrease" aria-label="Decrease font size" title="Decrease font size (Double-click to reset)">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M5 12h14"/>
+				</svg>
+			</button>
+			<button class="cb-fullscreen__font-btn cb-fullscreen__font-btn--increase" aria-label="Increase font size" title="Increase font size">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M12 5v14m-7-7h14"/>
+				</svg>
+			</button>
+		`;
+		return controls;
+	}
 
-    /**
-     * Set zoom to configured level for fullscreen mode.
-     */
-    function setFullscreenZoom() {
-      const currentZoom = zoomManager.getCurrentZoom();
-      fullscreenState.currentZoom = currentZoom;
+	// Create hint element for fullscreen mode.
+	function createFullscreenHint() {
+		const hint = document.createElement('div');
+		hint.className = 'cb-fullscreen__hint';
+		hint.innerHTML = 'Press <kbd>Esc</kbd> to exit full screen';
+		return hint;
+	}
 
-      // Set to configured zoom level for fullscreen.
-      zoomManager.setZoom(config.fullscreenZoomLevel);
-    }
+	/**
+	 * Get the current page background color.
+	 * This is used to set the background color of the fullscreen container in order to match the page background color and make the fullscreen container blend in with the page.
+	 *
+	 * @returns {string} The background color of the page
+	 */
+	function getPageBackgroundColor() {
+		// Check body background first.
+		const bodyBg = window.getComputedStyle(document.body).backgroundColor;
+		if (bodyBg && bodyBg !== 'rgba(0, 0, 0, 0)' && bodyBg !== 'transparent') {
+			return bodyBg;
+		}
 
-    /**
-     * Restore zoom to the initial state.
-     */
-    function restoreInitialZoom() {
-      const initialZoom = zoomManager.getStoredInitialZoom();
+		// Fallback to html element.
+		const fallbackBg = window.getComputedStyle(document.documentElement).backgroundColor;
+		if (fallbackBg && fallbackBg !== 'rgba(0, 0, 0, 0)' && fallbackBg !== 'transparent') {
+			return fallbackBg;
+		}
+		// Default fallback in case no background color is found.
+		return '#ffffff';
+	}
 
-      if (initialZoom) {
-        zoomManager.setZoom(initialZoom);
-      } else {
-        // Fallback: remove zoom styling.
-        zoomManager.removeZoomStyling();
-      }
-    }
+	// Get appropriate text color based on background.
+	function getContrastTextColor(backgroundColor) {
+		// Simple heuristic: if background is light, use dark text, else light text.
+		const rgb = backgroundColor.match(/\d+/g);
+		if (rgb && rgb.length >= 3) {
+			const brightness =
+				(parseInt(rgb[0]) * 299 + parseInt(rgb[1]) * 587 + parseInt(rgb[2]) * 114) / 1000;
+			return brightness > 128 ? '#000000' : '#ffffff';
+		}
+		return '#000000'; // Default to dark text.
+	}
 
-    // Create fullscreen container.
-    function createFullscreenContainer() {
-      if (document.querySelector(".ec-fullscreen-container")) return;
+	function createFullscreenButton() {
+		const button = document.createElement('button');
+		button.className = 'cb-fullscreen__button';
+		button.type = 'button';
+		button.setAttribute('aria-label', config.fullscreenButtonTooltip);
+		button.setAttribute('aria-expanded', 'false');
+		button.setAttribute('data-tooltip', config.fullscreenButtonTooltip);
+		// Remove native tooltip since we're using custom styled tooltip.
+		// button.title = config.fullscreenButtonTooltip;
 
-      const container = document.createElement("div");
-      container.className = "ec-fullscreen-container";
-      container.setAttribute("role", "dialog");
-      container.setAttribute("aria-modal", "true");
-      container.setAttribute("aria-label", "Code block in fullscreen view");
-      container.setAttribute("tabindex", "-1");
-      container.style.setProperty(
-        "--ec-fullscreen-animation-duration",
-        `${config.animationDuration}ms`
-      );
-      document.body.appendChild(container);
-    }
-
-    // Create hint element for fullscreen mode.
-    function createFullscreenHint() {
-      const hint = document.createElement("div");
-      hint.className = "ec-fullscreen-hint";
-      hint.innerHTML = "Press <kbd>Esc</kbd> to exit full screen";
-      return hint;
-    }
-
-    /**
-     * Get the current page background color.
-     * This is used to set the background color of the fullscreen container in order to match the page background color and make the fullscreen container blend in with the page.
-     *
-     * @returns {string} The background color of the page
-     */
-    function getPageBackgroundColor() {
-      // Check body background first.
-      const bodyBg = window.getComputedStyle(document.body).backgroundColor;
-      if (bodyBg && bodyBg !== "rgba(0, 0, 0, 0)" && bodyBg !== "transparent") {
-        return bodyBg;
-      }
-
-      // Fallback to html element.
-      const fallbackBg = window.getComputedStyle(
-        document.documentElement
-      ).backgroundColor;
-      if (
-        fallbackBg &&
-        fallbackBg !== "rgba(0, 0, 0, 0)" &&
-        fallbackBg !== "transparent"
-      ) {
-        return fallbackBg;
-      }
-      // Default fallback in case no background color is found.
-      return "#ffffff";
-    }
-
-    // Get appropriate text color based on background.
-    function getContrastTextColor(backgroundColor) {
-      // Simple heuristic: if background is light, use dark text, else light text.
-      const rgb = backgroundColor.match(/\d+/g);
-      if (rgb && rgb.length >= 3) {
-        const brightness =
-          (parseInt(rgb[0]) * 299 +
-            parseInt(rgb[1]) * 587 +
-            parseInt(rgb[2]) * 114) /
-          1000;
-        return brightness > 128 ? "#000000" : "#ffffff";
-      }
-      return "#000000"; // Default to dark text.
-    }
-
-    function createFullscreenButton() {
-      const button = document.createElement("button");
-      button.className = "ec-fullscreen-button";
-      button.type = "button";
-      button.setAttribute("aria-label", config.fullscreenButtonTooltip);
-      button.setAttribute("aria-expanded", "false");
-      button.setAttribute("data-tooltip", config.fullscreenButtonTooltip);
-      // Remove native tooltip since we're using custom styled tooltip.
-      // button.title = config.fullscreenButtonTooltip;
-
-      button.innerHTML = `
+		button.innerHTML = `
       <svg class="fullscreen-on" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
         <path fill="currentColor" d="${config.svgPathFullscreenOn}" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
@@ -253,441 +216,463 @@ function initECFullscreen(config) {
       </svg>
     `;
 
-      return button;
-    }
+		return button;
+	}
 
-    /**
-     * Adds a fullscreen button to a code block.
-     * @param {HTMLElement} codeBlock The code block to add the fullscreen button to.
-     * @returns {void}
-     * @description
-     * 1. Checks if a fullscreen button already exists in the code block.
-     * 2. Finds the figure element that contains the code block.
-     * 3. Checks if the code block has a title/header or is a terminal so that the toggle fullscreen button can be added to the header.
-     * 4. If configured to only add to titled blocks, skips blocks without titles or terminal styling.
-     * 5. For code blocks with titles or terminals, adds the button to the figcaption header.
-     * 6. For code blocks without titles or terminal styling, adds the button under the copy button.
-     * 7. Inserts the fullscreen button container in the same parent as copy button.
-     */
-    function addFullscreenButtonToBlock(codeBlock) {
-      // Check if button already exists.
-      if (codeBlock.querySelector(".ec-fullscreen-button")) return;
-      // Find the figure element that contains the code block.
-      const captionFrame = codeBlock.querySelector(".frame");
-      if (!captionFrame) return; // Exit if no frame element found.
+	/**
+	 * Adds a fullscreen button to a code block.
+	 * @param {HTMLElement} codeBlock The code block to add the fullscreen button to.
+	 * @returns {void}
+	 * @description
+	 * 1. Checks if a fullscreen button already exists in the code block.
+	 * 2. Finds the figure element that contains the code block.
+	 * 3. Checks if the code block has a title/header or is a terminal so that the toggle fullscreen button can be added to the header.
+	 * 4. If configured to only add to titled blocks, skips blocks without titles or terminal styling.
+	 * 5. For code blocks with titles or terminals, adds the button to the figcaption header.
+	 * 6. For code blocks without titles or terminal styling, adds the button under the copy button.
+	 * 7. Inserts the fullscreen button container in the same parent as copy button.
+	 */
+	function addFullscreenButtonToBlock(codeBlock) {
+		// Check if button already exists.
+		if (codeBlock.querySelector('.cb-fullscreen__button')) return;
+		// Find the figure element that contains the code block.
+		const captionFrame = codeBlock.querySelector('.frame');
+		if (!captionFrame) return; // Exit if no frame element found.
 
-      // Check if the code block has a title/header or is a terminal so that the toggle fullscreen button can be added to the header.
-      const hasTitleArea =
-        captionFrame.classList.contains("has-title") ||
-        captionFrame.classList.contains("is-terminal");
+		// Check if the code block has a title/header or is a terminal so that the toggle fullscreen button can be added to the header.
+		const hasTitleArea =
+			captionFrame.classList.contains('has-title') ||
+			captionFrame.classList.contains('is-terminal');
 
-      // If configured to only add to titled blocks, skip blocks without titles or terminal.
-      if (!config.addToUntitledBlocks && !hasTitleArea) {
-        return;
-      }
-      // For code blocks with titles or terminals, add button to the figcaption header.
-      const blockHeader = codeBlock.querySelector("figcaption.header");
-      if (hasTitleArea) {
-        // For code blocks with titles or terminals, add button to the figcaption header.
-        // const blockHeader = codeBlock.querySelector('figcaption.header');
+		// If configured to only add to titled blocks, skip blocks without titles or terminal.
+		if (!config.addToUntitledBlocks && !hasTitleArea) {
+			return;
+		}
+		// For code blocks with titles or terminals, add button to the figcaption header.
+		const blockHeader = codeBlock.querySelector('figcaption.header');
+		if (hasTitleArea) {
+			// For code blocks with titles or terminals, add button to the figcaption header.
+			// const blockHeader = codeBlock.querySelector('figcaption.header');
 
-        if (blockHeader) {
-          const button = createFullscreenButton();
+			if (blockHeader) {
+				const button = createFullscreenButton();
 
-          // Ensure the header has relative positioning.
-          const headerStyle = getComputedStyle(blockHeader);
-          if (headerStyle.position === "static") {
-            blockHeader.style.position = "relative";
-          }
-          // We need to position the button absolutely to the right of the header element (i.e. the code block's caption header).
-          button.style.cssText = `
+				// Ensure the header has relative positioning.
+				const headerStyle = getComputedStyle(blockHeader);
+				if (headerStyle.position === 'static') {
+					blockHeader.style.position = 'relative';
+				}
+				// We need to position the button absolutely to the right of the header element (i.e. the code block's caption header).
+				button.style.cssText = `
         position: absolute;
         right: 0.5rem;
         top: 50%;
         transform: translateY(-50%);
         z-index: 100;
       `;
-          blockHeader.appendChild(button);
-        }
-      } else {
-        // For code blocks without titles, add button next to the copy code button.
-        const copyButton = codeBlock.querySelector(".copy");
-        if (copyButton) {
-          // Create a container for the fullscreen button
-          const btnContainer = document.createElement("div");
-          btnContainer.style.cssText = `
+				blockHeader.appendChild(button);
+			}
+		} else {
+			// For code blocks without titles, add button at the bottom right corner.
+			const copyButton = codeBlock.querySelector('.copy');
+			if (copyButton) {
+				// Create a container for the fullscreen button
+				const btnContainer = document.createElement('div');
+				btnContainer.style.cssText = `
           position: absolute;
-          top: 45px;
+          bottom: 6px;
           right: 12px;
           z-index: 15;
           pointer-events: auto;
         `;
-          const toggleButton = createFullscreenButton();
-          btnContainer.appendChild(toggleButton);
-          if (captionFrame.offsetHeight > 95) {
-            // Add the toggle button only to code blocks whose height is greater than 95px.
-            copyButton.parentNode.appendChild(btnContainer);
-          }
-        }
-      }
-    }
+				const toggleButton = createFullscreenButton();
+				btnContainer.appendChild(toggleButton);
+				if (captionFrame.offsetHeight > 95) {
+					// Add the toggle button only to code blocks whose height is greater than 95px.
+					copyButton.parentNode.appendChild(btnContainer);
+				}
+			}
+		}
+	}
 
-    // Initialize fullscreen buttons for all code blocks.
-    function initializeFullscreenButtons() {
-      const codeBlocks = document.querySelectorAll(".expressive-code");
+	// Initialize fullscreen buttons for all code blocks.
+	function initializeFullscreenButtons() {
+		const codeBlocks = document.querySelectorAll('.expressive-code');
 
-      codeBlocks.forEach((block) => {
-        addFullscreenButtonToBlock(block);
-      });
+		codeBlocks.forEach((block) => {
+			addFullscreenButtonToBlock(block);
+		});
 
-      // Add event listeners to all fullscreen buttons.
-      document.querySelectorAll(".ec-fullscreen-button").forEach((button) => {
-        // Remove existing listeners to avoid duplicates.
-        const newButton = button.cloneNode(true);
-        button.parentNode.replaceChild(newButton, button);
+		// Add event listeners to all fullscreen buttons.
+		document.querySelectorAll('.cb-fullscreen__button').forEach((button) => {
+			// Remove existing listeners to avoid duplicates.
+			const newButton = button.cloneNode(true);
+			button.parentNode.replaceChild(newButton, button);
 
-        newButton.addEventListener("click", handleFullscreenClick);
+			newButton.addEventListener('click', handleFullscreenClick);
 
-        // Add keyboard support for Enter and Space keys.
-        newButton.addEventListener("keydown", function (event) {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            handleFullscreenClick.call(this, event);
-          }
-        });
-      });
-    }
+			// Add keyboard support for Enter and Space keys.
+			newButton.addEventListener('keydown', function (event) {
+				if (event.key === 'Enter' || event.key === ' ') {
+					event.preventDefault();
+					handleFullscreenClick.call(this, event);
+				}
+			});
+		});
+	}
 
-    function handleFullscreenClick(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      // Attempts to locate the code block that contains the toggle fullscreen button that was clicked.
-      const codeBlock = this.closest(".expressive-code");
+	function handleFullscreenClick(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		// Attempts to locate the code block that contains the toggle fullscreen button that was clicked.
+		const codeBlock = this.closest('.expressive-code');
 
-      if (codeBlock) {
-        toggleFullscreen(codeBlock);
-      }
-    }
+		if (codeBlock) {
+			toggleFullscreen(codeBlock);
+		}
+	}
 
-    function toggleFullscreen(codeBlock) {
-      const fullscreenContainer = document.querySelector(
-        ".ec-fullscreen-container"
-      );
+	function toggleFullscreen(codeBlock) {
+		const fullscreenContainer = document.querySelector('.cb-fullscreen__container');
 
-      if (fullscreenState.isFullscreenActive) {
-        exitFullscreen(fullscreenContainer);
-      } else {
-        enterFullscreen(codeBlock, fullscreenContainer);
-      }
-    }
+		if (fullscreenState.isFullscreenActive) {
+			exitFullscreen(fullscreenContainer);
+		} else {
+			enterFullscreen(codeBlock, fullscreenContainer);
+		}
+	}
 
-    function enterFullscreen(codeBlock, fullscreenContainer) {
-      // Store reference to original code block.
-      fullscreenState.originalCodeBlock = codeBlock;
+	function enterFullscreen(codeBlock, fullscreenContainer) {
+		// Store reference to original code block.
+		fullscreenState.originalCodeBlock = codeBlock;
 
-      // Update aria-expanded state for accessibility.
-      const originalButton = codeBlock.querySelector(".ec-fullscreen-button");
-      if (originalButton) {
-        originalButton.setAttribute("aria-expanded", "true");
-      }
+		// Load saved font size.
+		fullscreenState.fontSize = fontManager.loadFontSize();
 
-      // Clone the code block.
-      const clonedBlock = codeBlock.cloneNode(true);
-      clonedBlock.classList.add("ec-fullscreen-active");
+		// Update aria-expanded state for accessibility.
+		const originalButton = codeBlock.querySelector('.cb-fullscreen__button');
+		if (originalButton) {
+			originalButton.setAttribute('aria-expanded', 'true');
+		}
 
-      // Add event listener to exit button in fullscreen mode.
-      const fullscreenButtonInClone = clonedBlock.querySelector(
-        ".ec-fullscreen-button"
-      );
-      if (fullscreenButtonInClone) {
-        fullscreenButtonInClone.addEventListener("click", function (event) {
-          event.preventDefault();
-          event.stopPropagation();
-          toggleFullscreen(clonedBlock);
-        });
+		// Clone the code block.
+		const clonedBlock = codeBlock.cloneNode(true);
+		clonedBlock.classList.add('cb-fullscreen__active');
 
-        // Add keyboard support for cloned button.
-        fullscreenButtonInClone.addEventListener("keydown", function (event) {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            toggleFullscreen(clonedBlock);
-          }
-        });
-      }
+		// Add event listener to exit button in fullscreen mode.
+		const fullscreenButtonInClone = clonedBlock.querySelector('.cb-fullscreen__button');
+		if (fullscreenButtonInClone) {
+			fullscreenButtonInClone.addEventListener('click', function (event) {
+				event.preventDefault();
+				event.stopPropagation();
+				toggleFullscreen(clonedBlock);
+			});
 
-      // Save current state and enter fullscreen.
-      saveScrollPosition();
-      setFullscreenZoom();
-      setBodyOverflow(true);
+			// Add keyboard support for cloned button.
+			fullscreenButtonInClone.addEventListener('keydown', function (event) {
+				if (event.key === 'Enter' || event.key === ' ') {
+					event.preventDefault();
+					toggleFullscreen(clonedBlock);
+				}
+			});
+		}
 
-      if (config.enableEscapeKey) addKeyupListener();
-      if (config.exitOnBrowserBack) {
-        // Push a new history state so back button can exit fullscreen
-        history.pushState({ fullscreenActive: true }, "", window.location.href);
-        addPopStateListener();
-      }
+		// Save current state and enter fullscreen.
+		saveScrollPosition();
+		setBodyOverflow(true);
 
-      // Apply page background color to fullscreen container.
-      const pageBackgroundColor = getPageBackgroundColor();
-      const textColor = getContrastTextColor(pageBackgroundColor);
-      fullscreenContainer.style.backgroundColor = pageBackgroundColor;
-      fullscreenContainer.style.color = textColor;
+		if (config.enableEscapeKey) addKeyupListener();
+		if (config.exitOnBrowserBack) {
+			// Push a new history state so back button can exit fullscreen
+			history.pushState({ fullscreenActive: true }, '', window.location.href);
+			addPopStateListener();
+		}
 
-      fullscreenContainer.appendChild(clonedBlock);
+		// Apply page background color to fullscreen container.
+		const pageBackgroundColor = getPageBackgroundColor();
+		const textColor = getContrastTextColor(pageBackgroundColor);
+		fullscreenContainer.style.backgroundColor = pageBackgroundColor;
+		fullscreenContainer.style.color = textColor;
 
-      // Add hint if escape key is enabled.
-      if (config.enableEscapeKey) {
-        const hint = createFullscreenHint();
-        fullscreenContainer.appendChild(hint);
+		// Create main content wrapper.
+		const contentWrapper = document.createElement('div');
+		contentWrapper.className = 'cb-fullscreen__content';
 
-        // Auto-hide hint after 4 seconds.
-        setTimeout(() => {
-          if (hint && hint.parentNode) {
-            // Use JavaScript to fade out smoothly, overriding CSS animation.
-            hint.style.setProperty(
-              "transition",
-              "opacity 0.9s ease",
-              "important"
-            );
-            hint.style.setProperty("opacity", "0", "important");
+		// Add font size controls.
+		const fontControls = createFontSizeControls();
+		contentWrapper.appendChild(fontControls);
 
-            // Remove the hint completely after fade out completes.
-            setTimeout(() => {
-              if (hint && hint.parentNode) {
-                hint.remove();
-              }
-            }, 500); // Wait for fade transition to complete.
-          }
-        }, 4000);
-      }
+		// Add the cloned code block.
+		contentWrapper.appendChild(clonedBlock);
 
-      fullscreenContainer.classList.add("is-open");
-      fullscreenState.isFullscreenActive = true;
+		// Add the content wrapper to the fullscreen container.
+		fullscreenContainer.appendChild(contentWrapper);
 
-      // Focus the fullscreen container for better accessibility.
-      fullscreenContainer.focus();
+		// Add event listeners to font controls.
+		addFontControlListeners(fontControls, clonedBlock);
 
-      // Add focus trap for modal behavior.
-      addFocusTrap(fullscreenContainer);
-    }
+		// Apply initial font size.
+		fontManager.applyFontSize(clonedBlock);
 
-    function exitFullscreen(fullscreenContainer) {
-      // Restore original state.
-      setBodyOverflow(false);
-      restoreInitialZoom();
-      restoreScrollPosition();
+		// Add hint if escape key is enabled.
+		if (config.enableEscapeKey) {
+			const hint = createFullscreenHint();
+			fullscreenContainer.appendChild(hint);
 
-      if (config.enableEscapeKey) removeKeyupListener();
-      if (config.exitOnBrowserBack) {
-        removePopStateListener();
-        // Only go back if we're exiting due to escape key or button click (not back button)
-        if (history.state && history.state.fullscreenActive) {
-          history.back();
-        }
-      }
+			// Auto-hide hint after 4 seconds.
+			setTimeout(() => {
+				if (hint && hint.parentNode) {
+					// Use JavaScript to fade out smoothly, overriding CSS animation.
+					hint.style.setProperty('transition', 'opacity 0.9s ease', 'important');
+					hint.style.setProperty('opacity', '0', 'important');
 
-      // Remove focus trap.
-      removeFocusTrap();
+					// Remove the hint completely after fade out completes.
+					setTimeout(() => {
+						if (hint && hint.parentNode) {
+							hint.remove();
+						}
+					}, 500); // Wait for fade transition to complete.
+				}
+			}, 4000);
+		}
 
-      fullscreenContainer.classList.remove("is-open");
+		fullscreenContainer.classList.add('cb-fullscreen__container--open');
+		fullscreenState.isFullscreenActive = true;
 
-      // Reset inline styles.
-      fullscreenContainer.style.backgroundColor = "";
-      fullscreenContainer.style.color = "";
+		// Focus the fullscreen container for better accessibility.
+		fullscreenContainer.focus();
 
-      // Clear container contents.
-      while (fullscreenContainer.firstChild) {
-        fullscreenContainer.removeChild(fullscreenContainer.firstChild);
-      }
+		// Add focus trap for modal behavior.
+		addFocusTrap(fullscreenContainer);
+	}
 
-      fullscreenState.isFullscreenActive = false;
+	function exitFullscreen(fullscreenContainer) {
+		// Restore original state.
+		setBodyOverflow(false);
+		restoreScrollPosition();
 
-      // Return focus to original code block or button (before clearing the reference).
-      if (fullscreenState.originalCodeBlock) {
-        const originalButton = fullscreenState.originalCodeBlock.querySelector(
-          ".ec-fullscreen-button"
-        );
-        if (originalButton) {
-          // Restore aria-expanded state.
-          originalButton.setAttribute("aria-expanded", "false");
-          // Remove focus from the button to prevent visual outline.
-          originalButton.blur();
-        }
-      }
+		if (config.enableEscapeKey) removeKeyupListener();
+		if (config.exitOnBrowserBack) {
+			removePopStateListener();
+			// Only go back if we're exiting due to escape key or button click (not back button)
+			if (history.state && history.state.fullscreenActive) {
+				history.back();
+			}
+		}
 
-      // Clear the reference after using it.
-      fullscreenState.originalCodeBlock = null;
-    }
+		// Remove focus trap.
+		removeFocusTrap();
 
-    /**
-     * Save the current scroll position of the page before entering fullscreen mode.
-     */
-    function saveScrollPosition() {
-      fullscreenState.scrollPosition =
-        window.scrollY || document.documentElement.scrollTop;
-    }
+		fullscreenContainer.classList.remove('cb-fullscreen__container--open');
 
-    /**
-     * Restore the scroll position of the page after exiting fullscreen mode.
-     */
-    function restoreScrollPosition() {
-      if (
-        typeof fullscreenState.scrollPosition === "number" &&
-        !isNaN(fullscreenState.scrollPosition)
-      ) {
-        setTimeout(() => {
-          window.scrollTo({
-            top: fullscreenState.scrollPosition,
-            behavior: "smooth",
-          });
-        }, 0);
-      }
-    }
+		// Reset inline styles.
+		fullscreenContainer.style.backgroundColor = '';
+		fullscreenContainer.style.color = '';
 
-    /**
-     * Set the body overflow to hidden when entering fullscreen mode.
-     */
-    function setBodyOverflow(hidden) {
-      if (hidden) {
-        document.body.style.overflow = "hidden";
-        document.documentElement.style.overflow = "hidden";
-      } else {
-        document.body.style.overflow = "";
-        document.documentElement.style.overflow = "";
-      }
-    }
+		// Clear container contents.
+		while (fullscreenContainer.firstChild) {
+			fullscreenContainer.removeChild(fullscreenContainer.firstChild);
+		}
 
-    /**
-     * Handle the keyup event when the escape key is pressed.
-     */
-    function handleKeyup(event) {
-      if (event.key === "Escape" && fullscreenState.isFullscreenActive) {
-        const fullscreenContainer = document.querySelector(
-          ".ec-fullscreen-container"
-        );
-        if (fullscreenContainer) {
-          exitFullscreen(fullscreenContainer);
-        }
-      }
-    }
+		fullscreenState.isFullscreenActive = false;
 
-    /**
-     * Add a listener for the keyup event when the escape key is pressed.
-     */
-    function addKeyupListener() {
-      // Remove existing listener first to prevent duplicates.
-      document.removeEventListener("keyup", handleKeyup);
-      document.addEventListener("keyup", handleKeyup);
-    }
+		// Return focus to original code block or button (before clearing the reference).
+		if (fullscreenState.originalCodeBlock) {
+			const originalButton =
+				fullscreenState.originalCodeBlock.querySelector('.cb-fullscreen__button');
+			if (originalButton) {
+				// Restore aria-expanded state.
+				originalButton.setAttribute('aria-expanded', 'false');
+				// Remove focus from the button to prevent visual outline.
+				originalButton.blur();
+			}
+		}
 
-    /**
-     * Remove the listener for the keyup event when the escape key is pressed.
-     */
-    function removeKeyupListener() {
-      document.removeEventListener("keyup", handleKeyup);
-    }
+		// Clear the reference after using it.
+		fullscreenState.originalCodeBlock = null;
+	}
 
-    /**
-     * Handle the popstate event when the back button is pressed.
-     */
-    function handlePopState(event) {
-      if (fullscreenState.isFullscreenActive) {
-        // Prevent the history.back() call in exitFullscreen from causing a loop
-        const isBackButtonPressed =
-          !event.state || !event.state.fullscreenActive;
-        if (isBackButtonPressed) {
-          const fullscreenContainer = document.querySelector(
-            ".ec-fullscreen-container"
-          );
-          if (fullscreenContainer) {
-            // Temporarily disable back button handling to prevent recursion
-            removePopStateListener();
-            exitFullscreen(fullscreenContainer);
-          }
-        }
-      }
-    }
+	/**
+	 * Save the current scroll position of the page before entering fullscreen mode.
+	 */
+	function saveScrollPosition() {
+		fullscreenState.scrollPosition = window.scrollY || document.documentElement.scrollTop;
+	}
 
-    /**
-     * Add a listener for the popstate event when the back button is pressed.
-     */
-    function addPopStateListener() {
-      // Remove existing listener first to prevent duplicates.
-      window.removeEventListener("popstate", handlePopState);
-      window.addEventListener("popstate", handlePopState);
-    }
+	/**
+	 * Restore the scroll position of the page after exiting fullscreen mode.
+	 */
+	function restoreScrollPosition() {
+		if (
+			typeof fullscreenState.scrollPosition === 'number' &&
+			!isNaN(fullscreenState.scrollPosition)
+		) {
+			setTimeout(() => {
+				window.scrollTo({
+					top: fullscreenState.scrollPosition,
+					behavior: 'smooth',
+				});
+			}, 0);
+		}
+	}
 
-    /**
-     * Remove the listener for the popstate event when the back button is pressed.
-     */
-    function removePopStateListener() {
-      window.removeEventListener("popstate", handlePopState);
-    }
+	/**
+	 * Set the body overflow to hidden when entering fullscreen mode.
+	 */
+	function setBodyOverflow(hidden) {
+		if (hidden) {
+			document.body.style.overflow = 'hidden';
+			document.documentElement.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+			document.documentElement.style.overflow = '';
+		}
+	}
 
-    /**
-     * Add focus trap to keep focus within the fullscreen container.
-     */
-    function addFocusTrap(container) {
-      // Get all focusable elements within the container.
-      const focusableElements = container.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
+	/**
+	 * Handle the keyup event when the escape key is pressed.
+	 */
+	function handleKeyup(event) {
+		if (event.key === 'Escape' && fullscreenState.isFullscreenActive) {
+			const fullscreenContainer = document.querySelector('.cb-fullscreen__container');
+			if (fullscreenContainer) {
+				exitFullscreen(fullscreenContainer);
+			}
+		}
+	}
 
-      if (focusableElements.length === 0) return;
+	/**
+	 * Add a listener for the keyup event when the escape key is pressed.
+	 */
+	function addKeyupListener() {
+		// Remove existing listener first to prevent duplicates.
+		document.removeEventListener('keyup', handleKeyup);
+		document.addEventListener('keyup', handleKeyup);
+	}
 
-      const firstElement = focusableElements[0];
-      const lastElement = focusableElements[focusableElements.length - 1];
+	/**
+	 * Remove the listener for the keyup event when the escape key is pressed.
+	 */
+	function removeKeyupListener() {
+		document.removeEventListener('keyup', handleKeyup);
+	}
 
-      function handleTabKey(event) {
-        if (event.key === "Tab") {
-          if (event.shiftKey) {
-            // Shift + Tab
-            if (document.activeElement === firstElement) {
-              event.preventDefault();
-              lastElement.focus();
-            }
-          } else {
-            // Tab
-            if (document.activeElement === lastElement) {
-              event.preventDefault();
-              firstElement.focus();
-            }
-          }
-        }
-      }
+	/**
+	 * Handle the popstate event when the back button is pressed.
+	 */
+	function handlePopState(event) {
+		if (fullscreenState.isFullscreenActive) {
+			// Prevent the history.back() call in exitFullscreen from causing a loop
+			const isBackButtonPressed = !event.state || !event.state.fullscreenActive;
+			if (isBackButtonPressed) {
+				const fullscreenContainer = document.querySelector('.cb-fullscreen__container');
+				if (fullscreenContainer) {
+					// Temporarily disable back button handling to prevent recursion
+					removePopStateListener();
+					exitFullscreen(fullscreenContainer);
+				}
+			}
+		}
+	}
 
-      container.addEventListener("keydown", handleTabKey);
-      fullscreenState.focusTrapHandler = handleTabKey;
-    }
+	/**
+	 * Add a listener for the popstate event when the back button is pressed.
+	 */
+	function addPopStateListener() {
+		// Remove existing listener first to prevent duplicates.
+		window.removeEventListener('popstate', handlePopState);
+		window.addEventListener('popstate', handlePopState);
+	}
 
-    /**
-     * Remove focus trap.
-     */
-    function removeFocusTrap() {
-      const container = document.querySelector(".ec-fullscreen-container");
-      if (container && fullscreenState.focusTrapHandler) {
-        container.removeEventListener(
-          "keydown",
-          fullscreenState.focusTrapHandler
-        );
-        fullscreenState.focusTrapHandler = null;
-      }
-    }
+	/**
+	 * Remove the listener for the popstate event when the back button is pressed.
+	 */
+	function removePopStateListener() {
+		window.removeEventListener('popstate', handlePopState);
+	}
 
-    /**
-     * Initialize the fullscreen plugin.
-     */
-    function initialize() {
-      // Initialize zoom manager.
-      zoomManager.init();
+	/**
+	 * Add focus trap to keep focus within the fullscreen container.
+	 */
+	function addFocusTrap(container) {
+		// Get all focusable elements within the container.
+		const focusableElements = container.querySelectorAll(
+			'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+		);
 
-      createFullscreenContainer();
-      initializeFullscreenButtons();
-    }
+		if (focusableElements.length === 0) return;
 
-    // Initialize the plugin.
-    initialize();
-  });
+		const firstElement = focusableElements[0];
+		const lastElement = focusableElements[focusableElements.length - 1];
+
+		function handleTabKey(event) {
+			if (event.key === 'Tab') {
+				if (event.shiftKey) {
+					// Shift + Tab
+					if (document.activeElement === firstElement) {
+						event.preventDefault();
+						lastElement.focus();
+					}
+				} else {
+					// Tab
+					if (document.activeElement === lastElement) {
+						event.preventDefault();
+						firstElement.focus();
+					}
+				}
+			}
+		}
+
+		container.addEventListener('keydown', handleTabKey);
+		fullscreenState.focusTrapHandler = handleTabKey;
+	}
+
+	/**
+	 * Remove focus trap.
+	 */
+	function removeFocusTrap() {
+		const container = document.querySelector('.cb-fullscreen__container');
+		if (container && fullscreenState.focusTrapHandler) {
+			container.removeEventListener('keydown', fullscreenState.focusTrapHandler);
+			fullscreenState.focusTrapHandler = null;
+		}
+	}
+
+	// Add event listeners to font controls.
+	function addFontControlListeners(fontControls, codeBlock) {
+		const decreaseBtn = fontControls.querySelector('.cb-fullscreen__font-btn--decrease');
+		const increaseBtn = fontControls.querySelector('.cb-fullscreen__font-btn--increase');
+		let lastDecreaseClickTime = 0;
+		const resetThreshold = 500;
+
+		decreaseBtn.addEventListener('click', (event) => {
+			const currentTime = new Date().getTime();
+			if (currentTime - lastDecreaseClickTime < resetThreshold) {
+				fontManager.resetFontSize(codeBlock);
+			} else {
+				fontManager.adjustFontSize(-10, codeBlock);
+			}
+			lastDecreaseClickTime = currentTime;
+			event.target.blur();
+		});
+
+		increaseBtn.addEventListener('click', (event) => {
+			fontManager.adjustFontSize(10, codeBlock);
+			event.target.blur();
+		});
+	}
+
+	/**
+	 * Initialize the fullscreen plugin.
+	 */
+	function initialize() {
+		createFullscreenContainer();
+		initializeFullscreenButtons();
+	}
+
+	// Initialize the plugin.
+	initialize();
+ });
 }
 
 export default initECFullscreen;
