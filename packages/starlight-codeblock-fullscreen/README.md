@@ -10,11 +10,6 @@
 
 - **Fullscreen Mode**: Toggle code blocks to fullscreen view for better readability,
 - **Keyboard Navigation**: Exit fullscreen with Escape key or browser back button,
-- **Customizable Icons**: Use custom SVG paths for fullscreen buttons,
-- **Flexible Configuration**: Control animations and button placement,
-- **Responsive Design**: Works seamlessly across different screen sizes,
-- **Accessibility**: Full keyboard navigation and focus management,
-- **Smooth Animations**: Configurable animation duration for transitions,
 - **Smart Targeting**: Choose to add buttons to all blocks or only titled ones.
 
 ## Installation
@@ -84,7 +79,7 @@ starlightCodeblockFullscreen({
 })
 ```
 
-### User Interactions
+### Usage
 
 - **Click the toggle fullscreen button** to enter/exit fullscreen mode
 - **Press Escape** to exit fullscreen (if enabled)
