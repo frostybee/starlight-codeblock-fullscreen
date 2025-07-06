@@ -79,6 +79,11 @@ The Starlight code block fullscreen plugin accepts an object with the following 
 - **Range**: `150` to `700` milliseconds
 - **Description**: The duration of the fullscreen animation in milliseconds. Controls how fast the transition to and from fullscreen mode occurs. Values outside the range will be automatically adjusted to `200`.
 
+### Button Placement
+
+- **Titled blocks only**: Add buttons only to code blocks with titles (default)
+- **All blocks**: Include untitled code blocks with the `addToUntitledBlocks` option
+
 ## Example Configuration
 ---
 
@@ -113,11 +118,3 @@ export default defineConfig({
 The above configuration customizes the tooltip text, enables both escape key and back button navigation, adds fullscreen buttons only to titled code blocks, uses custom SVG icons, and sets a slower animation duration of 300ms.
 :::
 
-## How it works?
----
-
-- The plugin automatically detects and enhances all Expressive Code blocks on your pages,
-- The fullscreen overlay adapts to your page's background color for seamless integration,
-- You can customize the fullscreen button icons by providing your own SVG paths,
-- Animation duration is validated and constrained to ensure optimal performance (150-700ms),
-- Focus management ensures accessibility compliance with proper keyboard navigation.
