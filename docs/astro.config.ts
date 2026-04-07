@@ -1,6 +1,7 @@
 import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
 import starlightCodeBlockFullscreen from 'starlight-codeblock-fullscreen'
+import starlightScrollToTop from 'starlight-scroll-to-top'
 
 const siteURI = 'https://frostybee.github.io';
 export default defineConfig({
@@ -11,6 +12,7 @@ export default defineConfig({
       title: 'Starlight Code Block Fullscreen',
       favicon: '/images/full-screen.svg',      
       plugins: [
+        starlightScrollToTop(),
         starlightCodeBlockFullscreen({
           fullscreenButtonTooltip: 'Toggle fullscreen view',
           enableEscapeKey: true,

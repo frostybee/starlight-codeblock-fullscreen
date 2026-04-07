@@ -697,4 +697,3 @@ function initECFullscreen(config) {
  });
 }
 
-export default initECFullscreen;
