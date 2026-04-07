@@ -1,5 +1,13 @@
 # starlight-codeblock-fullscreen
 
+## 1.0.0
+
+### Major Changes
+
+- [`f26cee1`](https://github.com/frostybee/starlight-codeblock-fullscreen/commit/f26cee1eb1ade054c0fbefffe0584a36a1ca5240) Thanks [@frostybee](https://github.com/frostybee)! - Upgrade to Astro 6
+
+  - Fix duplicate export default conflict with other Starlight plugins (#2) and upgrade to Astro 6
+
 ## 0.1.4
 
 ### Patch Changes
