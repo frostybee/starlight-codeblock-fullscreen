@@ -1,5 +1,11 @@
 # starlight-codeblock-fullscreen
 
+## 2.0.0
+
+### Major Changes
+
+- [`a2b8ba5`](https://github.com/frostybee/starlight-codeblock-fullscreen/commit/a2b8ba58f8794af24d7297a20b34165653559444) Thanks [@frostybee](https://github.com/frostybee)! - Upgrade to Astro v7 and Starlight 0.41. Drops support for Astro v6 and Starlight versions below 0.41.
+
 ## 1.0.0
 
 ### Major Changes
