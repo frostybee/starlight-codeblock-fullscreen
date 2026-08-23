@@ -1,10 +1,17 @@
-<div align="center">
-  <h1>starlight-codeblock-fullscreen</h1>
-  <p>A plugin for Astro Starlight that adds fullscreen functionality to code blocks with customizable options.</p>
-  
-  [![npm version](https://badge.fury.io/js/starlight-codeblock-fullscreen.svg)](https://badge.fury.io/js/starlight-codeblock-fullscreen)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-</div>
+<h1 align="center">Codeblock Fullscreen</h1>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/starlight-codeblock-fullscreen"><img src="https://img.shields.io/npm/v/starlight-codeblock-fullscreen.svg" alt="npm version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+</p>
+
+<p align="center">
+  <a href="https://frostybee.github.io/starlight-codeblock-fullscreen/"><strong>Documentation</strong></a> ·
+  <a href="https://frostybee.github.io/starlight-codeblock-fullscreen/configuration/">Configuration</a> ·
+  <a href="https://github.com/frostybee/starlight-codeblock-fullscreen/releases">Releases</a>
+</p>
+
+A plugin for Astro Starlight that adds fullscreen functionality to code blocks with customizable options.
 
 ## Features
 
